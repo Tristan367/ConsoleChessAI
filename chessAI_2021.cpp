@@ -1507,7 +1507,16 @@ float miniMax(Position positions[], short depth, bool white, short& bestMoveFrom
 bool createNewPositionAndCallMiniMax(Position positions[], short positionIndex, short fromSqr, short toSqr, short depth, short staticDepth, short &bestMoveFrom, short &bestMoveTo, bool white) {
     // copying board to child and some other things
     for (short i = 0; i < 64; i++) {
-        positions[positionIndex + 1].board[i] = positions[positionIndex].board[i];
+        if (positions[positionIndex].board[i] == 'e') { // resetting en passant pawns
+            positions[positionIndex + 1].board[i] = 'p';
+        }
+        else if (positions[positionIndex].board[i] == 'E') {
+            positions[positionIndex + 1].board[i] = 'P';
+        }
+        else
+        {
+            positions[positionIndex + 1].board[i] = positions[positionIndex].board[i];
+        }
     }
     positions[positionIndex + 1].lastMove = toSqr; // storing the last move
     positions[positionIndex + 1].board[toSqr] = positions[positionIndex + 1].board[fromSqr]; // moving the piece
@@ -1522,7 +1531,6 @@ bool createNewPositionAndCallMiniMax(Position positions[], short positionIndex, 
             if (depth == staticDepth) { // record best move if we are the origin
                 bestMoveFrom = fromSqr;
                 bestMoveTo = toSqr;
-               // std::cout << "best move recorded in White: " << bestMoveFrom << " - " << bestMoveTo << ", value: " << val <<  '\n';
             }
             positions[positionIndex].alpha = val;
             if (val > positions[positionIndex].beta) { // prune
@@ -1538,7 +1546,6 @@ bool createNewPositionAndCallMiniMax(Position positions[], short positionIndex, 
             if (depth == staticDepth) { // record best move if we are the origin
                 bestMoveFrom = fromSqr;
                 bestMoveTo = toSqr;
-                std::cout << "best move recorded in Black: " << bestMoveFrom << " - " << bestMoveTo <<  ", value: " << val <<'\n';
             }
             positions[positionIndex].beta = val;
             if (positions[positionIndex].alpha > val) { // prune
@@ -1551,12 +1558,71 @@ bool createNewPositionAndCallMiniMax(Position positions[], short positionIndex, 
 bool createNewPosChangePieceAndCallMiniMax(Position positions[], short positionIndex, short fromSqr, short toSqr, short depth, short staticDepth, short& bestMoveFrom, short& bestMoveTo, bool white, char pieceChangeTo) {
     // copying board to child and some other things
     for (short i = 0; i < 64; i++) {
-        positions[positionIndex + 1].board[i] = positions[positionIndex].board[i];
+        if (positions[positionIndex].board[i] == 'e') { // resetting en passant pawns
+            positions[positionIndex + 1].board[i] = 'p';
+        }
+        else if (positions[positionIndex].board[i] == 'E') {
+            positions[positionIndex + 1].board[i] = 'P';
+        }
+        else
+        {
+            positions[positionIndex + 1].board[i] = positions[positionIndex].board[i];
+        }
     }
     positions[positionIndex + 1].lastMove = toSqr; // storing the last move
     positions[positionIndex + 1].board[fromSqr] = pieceChangeTo; // changing the piece
     positions[positionIndex + 1].board[toSqr] = positions[positionIndex + 1].board[fromSqr]; // moving the piece
     positions[positionIndex + 1].board[fromSqr] = '0'; // making the square it came from empty
+    positions[positionIndex + 1].alpha = positions[positionIndex].alpha;
+    positions[positionIndex + 1].beta = positions[positionIndex].beta;
+
+    if (white) {
+        float val = miniMax(positions, depth - 1, false, bestMoveFrom, bestMoveTo);
+        if (val > positions[positionIndex].alpha) {
+            if (depth == staticDepth) { // record best move if we are the origin
+                bestMoveFrom = fromSqr;
+                bestMoveTo = toSqr;
+            }
+            positions[positionIndex].alpha = val;
+            if (val > positions[positionIndex].beta) { // prune
+                return true;
+            }
+        }
+    }
+    else
+    {
+        float val = miniMax(positions, depth - 1, true, bestMoveFrom, bestMoveTo);
+        if (val < positions[positionIndex].beta) {
+            if (depth == staticDepth) { // record best move if we are the origin
+                bestMoveFrom = fromSqr;
+                bestMoveTo = toSqr;
+            }
+            positions[positionIndex].beta = val;
+            if (positions[positionIndex].alpha > val) { // prune
+                return true;
+            }
+        }
+    }
+    return false; // if we didn't return true earlier and shouldn't prune this branch
+}
+bool createNewPosRemovePieceAndCallMiniMax(Position positions[], short positionIndex, short fromSqr, short toSqr, short depth, short staticDepth, short& bestMoveFrom, short& bestMoveTo, bool white, short removeIndex) {
+    // copying board to child and some other things
+    for (short i = 0; i < 64; i++) {
+        if (positions[positionIndex].board[i] == 'e') { // resetting en passant pawns
+            positions[positionIndex + 1].board[i] = 'p';
+        }
+        else if (positions[positionIndex].board[i] == 'E') {
+            positions[positionIndex + 1].board[i] = 'P';
+        }
+        else
+        {
+            positions[positionIndex + 1].board[i] = positions[positionIndex].board[i];
+        }
+    }
+    positions[positionIndex + 1].lastMove = toSqr; // storing the last move
+    positions[positionIndex + 1].board[toSqr] = positions[positionIndex + 1].board[fromSqr]; // moving the piece
+    positions[positionIndex + 1].board[fromSqr] = '0'; // making the square it came from empty
+    positions[positionIndex + 1].board[removeIndex] = '0'; // removing other piece
     positions[positionIndex + 1].alpha = positions[positionIndex].alpha;
     positions[positionIndex + 1].beta = positions[positionIndex].beta;
 
@@ -1619,6 +1685,17 @@ float miniMax(Position positions[], short depth, bool white, short &bestMoveFrom
                                     goto PRUNED;
                                 }
                             }
+
+
+                            if (square < 16) { // double first move, changing to be recognized in en passant
+                                move += 8; 
+                                if (positions[positionIndex].board[move] == '0') {
+                                    if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'E')) {
+                                        goto PRUNED;
+                                    }
+                                }
+                            }
+                            
                         }
                         if (square % 8 != 0) { // diagonal left
                             move = square + 7;
@@ -1635,6 +1712,12 @@ float miniMax(Position positions[], short depth, bool white, short &bestMoveFrom
                                     }
                                 }
                             }
+
+                            if (positions[positionIndex].board[square - 1] == 'e') { // capturing en passant
+                                if (createNewPosRemovePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, square - 1)) {
+                                    goto PRUNED;
+                                }
+                            }
                         }
                         if (square % 8 != 7) { // diagonal right
                             move = square + 9;
@@ -1649,6 +1732,12 @@ float miniMax(Position positions[], short depth, bool white, short &bestMoveFrom
                                     if (createNewPositionAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white)) {
                                         goto PRUNED;
                                     }
+                                }
+                            }
+
+                            if (positions[positionIndex].board[square + 1] == 'e') { // capturing en passant
+                                if (createNewPosRemovePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, square + 1)) {
+                                    goto PRUNED;
                                 }
                             }
                         }
@@ -2189,6 +2278,15 @@ float miniMax(Position positions[], short depth, bool white, short &bestMoveFrom
                                     goto PRUNED;
                                 }
                             }
+
+                            if (square > 47) { // double first move
+                                move -= 8;
+                                if (positions[positionIndex].board[move] == '0') {
+                                    if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'e')) {
+                                        goto PRUNED;
+                                    }
+                                }
+                            }
                         }
                         if (square % 8 != 0) { // down left
                             move = square - 9;
@@ -2205,6 +2303,11 @@ float miniMax(Position positions[], short depth, bool white, short &bestMoveFrom
                                     }
                                 }
                             }
+                            if (positions[positionIndex].board[square - 1] == 'E') { // capturing en passant
+                                if (createNewPosRemovePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, square - 1)) {
+                                    goto PRUNED;
+                                }
+                            }
                         }
                         if (square % 8 != 7) { // down right
                             move = square - 7;
@@ -2219,6 +2322,11 @@ float miniMax(Position positions[], short depth, bool white, short &bestMoveFrom
                                     if (createNewPositionAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white)) {
                                         goto PRUNED;
                                     }
+                                }
+                            }
+                            if (positions[positionIndex].board[square + 1] == 'E') { // capturing en passant
+                                if (createNewPosRemovePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, square + 1)) {
+                                    goto PRUNED;
                                 }
                             }
                         }
@@ -2742,19 +2850,7 @@ float miniMax(Position positions[], short depth, bool white, short &bestMoveFrom
             positions[depthIndex].beta = value;
         }
     }
-
-    if (depth == staticDepth) { // resetting things in preparation for the next move
-        positions[0].alpha = -1000;
-        positions[0].beta = 1000;
-        if (positions[0].board[bestMoveFrom] == 'P' && bestMoveTo > 55) {
-            positions[0].board[bestMoveFrom] = 'Q'; // promoting to queen
-        }
-        if (positions[0].board[bestMoveFrom] == 'p' && bestMoveTo < 8) {
-            positions[0].board[bestMoveFrom] = 'q'; // promoting to queen
-        }
-        positions[0].board[bestMoveTo] = positions[0].board[bestMoveFrom]; // making the best move
-        positions[0].board[bestMoveFrom] = '0';
-    }
+    
 PRUNED:
 
     if (white) { // returning the correct value to the parent
@@ -2764,6 +2860,72 @@ PRUNED:
     {
         return positions[depthIndex].beta;
     }
+}
+
+void findBestMove(Position positions[], short depth, bool white) {
+    short bestMoveFrom, bestMoveTo;
+    positions[0].alpha = -1000; // just making sure alpha and beta are reset
+    positions[0].beta = 1000;
+
+    miniMax(positions, depth, white, bestMoveFrom, bestMoveTo); // recursive function
+
+    for (short i = 0; i < 64; i++) {
+        if (white) {
+            if (positions[0].board[i] == 'e') { // resetting en passant pawns from last move
+                positions[0].board[i] = 'p';
+            }
+        }
+        else
+        {
+            if (positions[0].board[i] == 'E') {
+                positions[0].board[i] = 'P';
+            }
+        }
+    }
+
+
+    // applying the best move to the origin board after miniMax is complete, applying possible piece changes from special moves
+    if (positions[0].board[bestMoveFrom] == 'P') {
+        if (bestMoveTo > 55) {
+            positions[0].board[bestMoveFrom] = 'Q'; // promoting to queen
+        }
+        short mDif = bestMoveTo - bestMoveFrom; // for en passant
+        if (mDif != 8) {
+            if (mDif == 16) {
+                positions[0].board[bestMoveFrom] = 'E'; // changing to an en passant pawn
+            }
+            else
+            {
+                if (positions[0].board[bestMoveTo] == '0') { // meaning we captured en passant
+                    positions[0].board[bestMoveTo - 8] = '0';
+                }
+            }
+        }
+    }
+    if (positions[0].board[bestMoveFrom] == 'p') {
+        if (bestMoveTo < 8) {
+            positions[0].board[bestMoveFrom] = 'q'; // promoting to queen
+        }
+        short mDif = bestMoveFrom - bestMoveTo; // for en passant
+        if (mDif != 8) {
+            if (mDif == 16) {
+                positions[0].board[bestMoveFrom] = 'e'; // changing to an en passant pawn
+            }
+            else
+            {
+                if (positions[0].board[bestMoveTo] == '0') { // meaning we captured en passant
+                    positions[0].board[bestMoveTo + 8] = '0';
+                }
+            }
+        }
+    }
+    positions[0].board[bestMoveTo] = positions[0].board[bestMoveFrom]; // applying the move
+    positions[0].board[bestMoveFrom] = '0';
+
+    // check for game over
+
+
+    return;
 }
 
 void arrangeStartingBoard(Position &position) {
@@ -2830,14 +2992,15 @@ void debuggingPosition1(Position& position) {
         position.board[i] = '0';
     }
 
-    position.board[55] = 'P';
-    position.board[15] = 'p';
-    position.board[8] = 'P';
-    position.board[17] = 'p';
+    position.board[27] = 'R';
+    position.board[28] = 'R';
+    position.board[29] = 'r';
+    position.board[16] = 'r';
 
-    for (int i = 0; i < 5; i++) {
-        position.board[i] = 'P';
-        position.board[i + 32] = 'p';
+
+    for (int i = 0; i < 8; i++) {
+        //position.board[i + 8] = 'P';
+        //position.board[i + 48] = 'p';
     }
 
 }
@@ -2845,12 +3008,10 @@ void debuggingPosition1(Position& position) {
 int main()
 {
     const short depth = 5;
-    short moveTo = 0;
-    short moveFrom = 0; // where miniMax will store the best moves
-    Position positions[depth + 1]; // buffer for position data
+    Position positions[depth + 1]; // buffer for position data, the first element is the current position
 
-    //arrangeStartingBoard(positions[0]);
-    loadPosition(positions[0], "debug12.txt"); // changes alpha to 0 for some reason
+    arrangeStartingBoard(positions[0]);
+    //loadPosition(positions[0], "debug12.txt"); // changes alpha to 0 for some reason
     //debuggingPosition1(positions[0]);
 
     Position lastPosition = Position();
@@ -2858,9 +3019,6 @@ int main()
 
     printBoard(positions[0]);
     std::string input;
-
-    positions[0].alpha = -1000; // because sometimes these get messed up by loadPosition idk why
-    positions[0].beta = 1000;
 
     while (true)
     {
@@ -2885,7 +3043,9 @@ int main()
         }
 
         auto start = high_resolution_clock::now();
-        miniMax(positions, depth, whiteToMove, moveFrom, moveTo);
+
+        findBestMove(positions, depth, whiteToMove);
+
         auto stop = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>(stop - start);
 
@@ -2921,14 +3081,12 @@ int main()
 }
 
 // lower case = black, uppercase = white, empty is '0'
-//
 
 
 // TO-DO LIST
 //figure out a way to stop black's blunder in debug12.txt, it thinks it would win white's bishop if it dared taking the pawn, but doesn't see that the bishop can both trade away and threaten the king (or queen) at the same time
 
 // check and checkmate
-// en passant
 // castling
 
 
