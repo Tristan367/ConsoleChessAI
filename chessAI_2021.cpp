@@ -11,6 +11,7 @@ public:
     char board[64];
     short lastMove;
     float alpha, beta;
+    bool kingCapture;
     Position() {
         for (short i = 0; i < 64; i++) {
             board[i] = '0';
@@ -18,6 +19,7 @@ public:
         lastMove = -1;
         alpha = -1000;
         beta = 1000;
+        kingCapture = false;
     }
 };
 
@@ -35,6 +37,496 @@ void copyPosition(Position& dst, Position src) {
     }
 }
 
+bool isSquareInCheckByBlack(Position position, int square) {
+
+    // checking diagonal checks, bishops, queens, pawns, and enemy kings
+    short move;
+    for (short j = 1; j < 8; j++) {
+        move = square + (9 * j);
+        if (move < 64 && move % 8 != 0) { // forward right
+            if (j == 1) {
+                if (position.board[move] == 'p') {
+                    return true;
+                }
+                else if (position.board[move] == 'k' || position.board[move] == 'c') // a black king or a moved black king
+                {
+                    return true;
+                }
+            }
+            if (position.board[move] == 'b' || position.board[move] == 'q') {
+               
+                return true;
+            }
+            else if (position.board[move] < 96)
+            {
+                break; // stop looking in this direction when we see a freindly piece
+            }
+        }
+        else
+        {
+            break; // reaching end of board
+        }
+    }
+    for (short j = 1; j < 8; j++) {
+        move = square - (7 * j);
+        if (move >= 0 && move % 8 != 0) { // backward right
+            if (j == 1) {
+                if (position.board[move] == 'k' || position.board[move] == 'c') // a black king or a moved black king 
+                {
+                    return true;
+                }
+            }
+            if (position.board[move] == 'b' || position.board[move] == 'q') {
+
+                return true;
+            }
+            else if (position.board[move] < 96)
+            {
+                break; // stop looking in this direction when we see a freindly piece
+            }
+        }
+        else
+        {
+            break; // reaching end of board
+        }
+    }
+    for (short j = 1; j < 8; j++) {
+        move = square + (7 * j);
+        if (move < 64 && move % 8 != 7) { // forward left
+            if (j == 1) {
+                if (position.board[move] == 'p') {
+                    return true;
+                }
+                else if (position.board[move] == 'k' || position.board[move] == 'c') // a black king or a moved black king
+                {
+                    return true;
+                }
+            }
+            if (position.board[move] == 'b' || position.board[move] == 'q') {
+
+                return true;
+            }
+            else if (position.board[move] < 96)
+            {
+                break; // stop looking in this direction when we see a freindly piece
+            }
+        }
+        else
+        {
+            break; // reaching end of board
+        }
+    }
+    for (short j = 1; j < 8; j++) {
+        move = square - (9 * j);
+        if (move >= 0 && move % 8 != 0) { // backward left
+            if (j == 1) {
+                if (position.board[move] == 'k' || position.board[move] == 'c') // a black king or a moved black king 
+                {
+                    return true;
+                }
+            }
+            if (position.board[move] == 'b' || position.board[move] == 'q') {
+
+                return true;
+            }
+            else if (position.board[move] < 96)
+            {
+                break; // stop looking in this direction when we see a freindly piece
+            }
+        }
+        else
+        {
+            break; // reaching end of board
+        }
+    }
+
+    // checking orthagonal checks, rooks, queens, and enemy kings
+    for (short j = 1; j < 8; j++) {
+        move = square + (8 * j);
+        if (move < 64) { // forward
+            if (j == 1) {
+                if (position.board[move] == 'k' || position.board[move] == 'c') {
+                    return true;
+                }
+            }
+            if (position.board[move] == 'r' || position.board[move] == 'h' || position.board[move] == 'q') {
+                
+                return true;
+            }
+            else if (position.board[move] < 96)
+            {
+                break; // stop looking in this direction when we see a freindly piece
+            }
+        }
+        else
+        {
+            break; // reaching end of board
+        }
+    }
+    for (short j = 1; j < 8; j++) {
+        move = square - (8 * j);
+        if (move >= 0) { // backward
+            if (j == 1) {
+                if (position.board[move] == 'k' || position.board[move] == 'c') {
+                    return true;
+                }
+            }
+            if (position.board[move] == 'r' || position.board[move] == 'h' || position.board[move] == 'q') {
+
+                return true;
+            }
+            else if (position.board[move] < 96)
+            {
+                break; // stop looking in this direction when we see a freindly piece
+            }
+        }
+        else
+        {
+            break; // reaching end of board
+        }
+    }
+    for (short j = 1; j < 8; j++) {
+        move = square + j;
+        if (move < 64 && move % 8 != 0) { // right
+            if (j == 1) {
+                if (position.board[move] == 'k' || position.board[move] == 'c') {
+                    return true;
+                }
+            }
+            if (position.board[move] == 'r' || position.board[move] == 'h' || position.board[move] == 'q') {
+
+                return true;
+            }
+            else if (position.board[move] < 96)
+            {
+                break; // stop looking in this direction when we see a freindly piece
+            }
+        }
+        else
+        {
+            break; // reaching end of board
+        }
+    }
+    for (short j = 1; j < 8; j++) {
+        move = square - j;
+        if (move >= 0 && move % 8 != 7) { // left
+            if (j == 1) {
+                if (position.board[move] == 'k' || position.board[move] == 'c') {
+                    return true;
+                }
+            }
+            if (position.board[move] == 'r' || position.board[move] == 'h' || position.board[move] == 'q') {
+
+                return true;
+            }
+            else if (position.board[move] < 96)
+            {
+                break; // stop looking in this direction when we see a freindly piece
+            }
+        }
+        else
+        {
+            break; // reaching end of board
+        }
+    }
+
+    // checking nights
+    move = square + 10;
+    if (move < 64 && move % 8 != 0 && move % 8 != 1) { // if it is within the bounds of the board
+        if (position.board[move] == 'n') { 
+            return true;
+        }
+    }
+    move = square + 17;
+    if (move < 64 && move % 8 != 0) {
+        if (position.board[move] == 'n') {
+            return true;
+        }
+    }
+    move = square + 15;
+    if (move < 64 && move % 8 != 7) {
+        if (position.board[move] == 'n') {
+            return true;
+        }
+    }
+    move = square + 6;
+    if (move < 64 && move % 8 != 7 && move % 8 != 6) {
+        if (position.board[move] == 'n') {
+            return true;
+        }
+    }
+    move = square - 15;
+    if (move >= 0 && move % 8 != 0) {
+        if (position.board[move] == 'n') {
+            return true;
+        }
+    }
+    move = square - 6;
+    if (move >= 0 && move % 8 != 0 && move % 8 != 1) {
+        if (position.board[move] == 'n') {
+            return true;
+        }
+    }
+    move = square - 17;
+    if (move >= 0 && move % 8 != 7) {
+        if (position.board[move] == 'n') {
+            return true;
+        }
+    }
+    move = square - 10;
+    if (move >= 0 && move % 8 != 7 && move % 8 != 6) {
+        if (position.board[move] == 'n') {
+            return true;
+        }
+    }
+
+    return false;
+}
+bool isSquareInCheckByWhite(Position position, int square) {
+
+    // checking diagonal checks, bishops, queens, pawns, and kings
+    short move;
+    for (short j = 1; j < 8; j++) {
+        move = square + (9 * j);
+        if (move < 64 && move % 8 != 0) { // forward right
+            if (j == 1) {
+                if (position.board[move] == 'K' || position.board[move] == 'C') // a black king or a moved black king
+                {
+                    return true;
+                }
+            }
+            if (position.board[move] == 'B' || position.board[move] == 'Q') {
+
+                return true;
+            }
+            else if (position.board[move] > 96)
+            {
+                break; // stop looking in this direction when we see a freindly piece
+            }
+        }
+        else
+        {
+            break; // reaching end of board
+        }
+    }
+    for (short j = 1; j < 8; j++) {
+        move = square - (7 * j);
+        if (move >= 0 && move % 8 != 0) { // backward right
+            if (j == 1) {
+                if (position.board[move] == 'P') {
+                    return true;
+                }
+                else if (position.board[move] == 'K' || position.board[move] == 'C') // a black king or a moved black king 
+                {
+                    return true;
+                }
+            }
+            if (position.board[move] == 'B' || position.board[move] == 'Q') {
+
+                return true;
+            }
+            else if (position.board[move] > 96)
+            {
+                break; // stop looking in this direction when we see a freindly piece
+            }
+        }
+        else
+        {
+            break; // reaching end of board
+        }
+    }
+    for (short j = 1; j < 8; j++) {
+        move = square + (7 * j);
+        if (move < 64 && move % 8 != 7) { // forward left
+            if (j == 1) {
+                if (position.board[move] == 'K' || position.board[move] == 'C') // a black king or a moved black king
+                {
+                    return true;
+                }
+            }
+            if (position.board[move] == 'B' || position.board[move] == 'Q') {
+
+                return true;
+            }
+            else if (position.board[move] > 96)
+            {
+                break; // stop looking in this direction when we see a freindly piece
+            }
+        }
+        else
+        {
+            break; // reaching end of board
+        }
+    }
+    for (short j = 1; j < 8; j++) {
+        move = square - (9 * j);
+        if (move >= 0 && move % 8 != 0) { // backward left
+            if (j == 1) {
+                if (position.board[move] == 'P') {
+                    return true;
+                }
+                else if (position.board[move] == 'K' || position.board[move] == 'C') // a black king or a moved black king 
+                {
+                    return true;
+                }
+            }
+            if (position.board[move] == 'B' || position.board[move] == 'Q') {
+
+                return true;
+            }
+            else if (position.board[move] > 96)
+            {
+                break; // stop looking in this direction when we see a freindly piece
+            }
+        }
+        else
+        {
+            break; // reaching end of board
+        }
+    }
+
+    // checking orthagonal checks, rooks, queens, and kings
+    for (short j = 1; j < 8; j++) {
+        move = square + (8 * j);
+        if (move < 64) { // forward
+            if (j == 1) {
+                if (position.board[move] == 'K' || position.board[move] == 'C') {
+                    return true;
+                }
+            }
+            if (position.board[move] == 'R' || position.board[move] == 'H' || position.board[move] == 'Q') {
+
+                return true;
+            }
+            else if (position.board[move] > 96)
+            {
+                break; // stop looking in this direction when we see a freindly piece
+            }
+        }
+        else
+        {
+            break; // reaching end of board
+        }
+    }
+    for (short j = 1; j < 8; j++) {
+        move = square - (8 * j);
+        if (move >= 0) { // backward
+            if (j == 1) {
+                if (position.board[move] == 'K' || position.board[move] == 'C') {
+                    return true;
+                }
+            }
+            if (position.board[move] == 'R' || position.board[move] == 'H' || position.board[move] == 'Q') {
+
+                return true;
+            }
+            else if (position.board[move] > 96)
+            {
+                break; // stop looking in this direction when we see a freindly piece
+            }
+        }
+        else
+        {
+            break; // reaching end of board
+        }
+    }
+    for (short j = 1; j < 8; j++) {
+        move = square + j;
+        if (move < 64 && move % 8 != 0) { // right
+            if (j == 1) {
+                if (position.board[move] == 'K' || position.board[move] == 'C') {
+                    return true;
+                }
+            }
+            if (position.board[move] == 'R' || position.board[move] == 'H' || position.board[move] == 'Q') {
+
+                return true;
+            }
+            else if (position.board[move] > 96)
+            {
+                break; // stop looking in this direction when we see a freindly piece
+            }
+        }
+        else
+        {
+            break; // reaching end of board
+        }
+    }
+    for (short j = 1; j < 8; j++) {
+        move = square - j;
+        if (move >= 0 && move % 8 != 7) { // left
+            if (j == 1) {
+                if (position.board[move] == 'K' || position.board[move] == 'C') {
+                    return true;
+                }
+            }
+            if (position.board[move] == 'R' || position.board[move] == 'H' || position.board[move] == 'Q') {
+
+                return true;
+            }
+            else if (position.board[move] > 96)
+            {
+                break; // stop looking in this direction when we see a freindly piece
+            }
+        }
+        else
+        {
+            break; // reaching end of board
+        }
+    }
+
+    // checking nights
+    move = square + 10;
+    if (move < 64 && move % 8 != 0 && move % 8 != 1) { // if it is within the bounds of the board
+        if (position.board[move] == 'N') {
+            return true;
+        }
+    }
+    move = square + 17;
+    if (move < 64 && move % 8 != 0) {
+        if (position.board[move] == 'N') {
+            return true;
+        }
+    }
+    move = square + 15;
+    if (move < 64 && move % 8 != 7) {
+        if (position.board[move] == 'N') {
+            return true;
+        }
+    }
+    move = square + 6;
+    if (move < 64 && move % 8 != 7 && move % 8 != 6) {
+        if (position.board[move] == 'N') {
+            return true;
+        }
+    }
+    move = square - 15;
+    if (move >= 0 && move % 8 != 0) {
+        if (position.board[move] == 'N') {
+            return true;
+        }
+    }
+    move = square - 6;
+    if (move >= 0 && move % 8 != 0 && move % 8 != 1) {
+        if (position.board[move] == 'N') {
+            return true;
+        }
+    }
+    move = square - 17;
+    if (move >= 0 && move % 8 != 7) {
+        if (position.board[move] == 'N') {
+            return true;
+        }
+    }
+    move = square - 10;
+    if (move >= 0 && move % 8 != 7 && move % 8 != 6) {
+        if (position.board[move] == 'N') {
+            return true;
+        }
+    }
+
+    return false;
+}
 bool pieceWouldBeCaptured(Position position, short square) {
     short whiteProtectors = 0; 
     short blackProtectors = 0;
@@ -51,8 +543,40 @@ bool pieceWouldBeCaptured(Position position, short square) {
             {
                 if (i == 1) {
                     blackProtectors++;
-                    i = 7; // break the loop
                 }
+                i = 7; // break the loop
+                break;
+            }
+            case 'c':
+            {
+                if (i == 1) {
+                    blackProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
+            case 'C':
+            {
+                if (i == 1) {
+                    whiteProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
+            case 'k':
+            {
+                if (i == 1) {
+                    blackProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
+            case 'K':
+            {
+                if (i == 1) {
+                    whiteProtectors++;
+                }
+                i = 7; // break the loop
                 break;
             }
             case 'b':
@@ -78,7 +602,7 @@ bool pieceWouldBeCaptured(Position position, short square) {
 
             default:
             {
-                i = 7;
+                i = 7; // breaking from loop
                 break;
             }
             }
@@ -101,8 +625,40 @@ bool pieceWouldBeCaptured(Position position, short square) {
             {
                 if (i == 1) {
                     whiteProtectors++;
-                    i = 7; // break the loop
                 }
+                i = 7; // break the loop
+                break;
+            }
+            case 'c':
+            {
+                if (i == 1) {
+                    blackProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
+            case 'C':
+            {
+                if (i == 1) {
+                    whiteProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
+            case 'k':
+            {
+                if (i == 1) {
+                    blackProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
+            case 'K':
+            {
+                if (i == 1) {
+                    whiteProtectors++;
+                }
+                i = 7; // break the loop
                 break;
             }
             case 'b':
@@ -128,7 +684,7 @@ bool pieceWouldBeCaptured(Position position, short square) {
 
             default:
             {
-                i = 7;
+                i = 7; // breaking from loop
                 break;
             }
             }
@@ -149,8 +705,40 @@ bool pieceWouldBeCaptured(Position position, short square) {
             {
                 if (i == 1) {
                     blackProtectors++;
-                    i = 7; // break the loop
                 }
+                i = 7;
+                break;
+            }
+            case 'c':
+            {
+                if (i == 1) {
+                    blackProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
+            case 'C':
+            {
+                if (i == 1) {
+                    whiteProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
+            case 'k':
+            {
+                if (i == 1) {
+                    blackProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
+            case 'K':
+            {
+                if (i == 1) {
+                    whiteProtectors++;
+                }
+                i = 7; // break the loop
                 break;
             }
             case 'b':
@@ -176,7 +764,7 @@ bool pieceWouldBeCaptured(Position position, short square) {
 
             default:
             {
-                i = 7;
+                i = 7; // breaking from loop
                 break;
             }
             }
@@ -197,8 +785,40 @@ bool pieceWouldBeCaptured(Position position, short square) {
             {
                 if (i == 1) {
                     whiteProtectors++;
-                    i = 7; // break the loop
                 }
+                i = 7;
+                break;
+            }
+            case 'c':
+            {
+                if (i == 1) {
+                    blackProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
+            case 'C':
+            {
+                if (i == 1) {
+                    whiteProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
+            case 'k':
+            {
+                if (i == 1) {
+                    blackProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
+            case 'K':
+            {
+                if (i == 1) {
+                    whiteProtectors++;
+                }
+                i = 7; // break the loop
                 break;
             }
             case 'b':
@@ -224,7 +844,7 @@ bool pieceWouldBeCaptured(Position position, short square) {
 
             default:
             {
-                i = 7;
+                i = 7; // breaking from loop
                 break;
             }
             }
@@ -242,7 +862,44 @@ bool pieceWouldBeCaptured(Position position, short square) {
             {
             case '0':
                 break;
+            case 'c':
+            {
+                if (i == 1) {
+                    blackProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
+            case 'C':
+            {
+                if (i == 1) {
+                    whiteProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
+            case 'k':
+            {
+                if (i == 1) {
+                    blackProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
+            case 'K':
+            {
+                if (i == 1) {
+                    whiteProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
             case 'r':
+            {
+                blackProtectors++;
+                break;
+            }
+            case 'h':
             {
                 blackProtectors++;
                 break;
@@ -257,6 +914,11 @@ bool pieceWouldBeCaptured(Position position, short square) {
                 whiteProtectors++;
                 break;
             }
+            case 'H':
+            {
+                whiteProtectors++;
+                break;
+            }
             case 'Q':
             {
                 whiteProtectors++;
@@ -265,7 +927,7 @@ bool pieceWouldBeCaptured(Position position, short square) {
 
             default:
             {
-                i = 7;
+                i = 7; // breaking from loop
                 break;
             }
             }
@@ -282,7 +944,44 @@ bool pieceWouldBeCaptured(Position position, short square) {
             {
             case '0':
                 break;
+            case 'c':
+            {
+                if (i == 1) {
+                    blackProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
+            case 'C':
+            {
+                if (i == 1) {
+                    whiteProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
+            case 'k':
+            {
+                if (i == 1) {
+                    blackProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
+            case 'K':
+            {
+                if (i == 1) {
+                    whiteProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
             case 'r':
+            {
+                blackProtectors++;
+                break;
+            }
+            case 'h':
             {
                 blackProtectors++;
                 break;
@@ -297,6 +996,11 @@ bool pieceWouldBeCaptured(Position position, short square) {
                 whiteProtectors++;
                 break;
             }
+            case 'H':
+            {
+                whiteProtectors++;
+                break;
+            }
             case 'Q':
             {
                 whiteProtectors++;
@@ -305,7 +1009,7 @@ bool pieceWouldBeCaptured(Position position, short square) {
 
             default:
             {
-                i = 7;
+                i = 7; // breaking from loop
                 break;
             }
             }
@@ -322,7 +1026,44 @@ bool pieceWouldBeCaptured(Position position, short square) {
             {
             case '0':
                 break;
+            case 'c':
+            {
+                if (i == 1) {
+                    blackProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
+            case 'C':
+            {
+                if (i == 1) {
+                    whiteProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
+            case 'k':
+            {
+                if (i == 1) {
+                    blackProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
+            case 'K':
+            {
+                if (i == 1) {
+                    whiteProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
             case 'r':
+            {
+                blackProtectors++;
+                break;
+            }
+            case 'h':
             {
                 blackProtectors++;
                 break;
@@ -337,6 +1078,11 @@ bool pieceWouldBeCaptured(Position position, short square) {
                 whiteProtectors++;
                 break;
             }
+            case 'H':
+            {
+                whiteProtectors++;
+                break;
+            }
             case 'Q':
             {
                 whiteProtectors++;
@@ -345,7 +1091,7 @@ bool pieceWouldBeCaptured(Position position, short square) {
 
             default:
             {
-                i = 7;
+                i = 7; // breaking from loop
                 break;
             }
             }
@@ -362,7 +1108,44 @@ bool pieceWouldBeCaptured(Position position, short square) {
             {
             case '0':
                 break;
+            case 'c':
+            {
+                if (i == 1) {
+                    blackProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
+            case 'C':
+            {
+                if (i == 1) {
+                    whiteProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
+            case 'k':
+            {
+                if (i == 1) {
+                    blackProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
+            case 'K':
+            {
+                if (i == 1) {
+                    whiteProtectors++;
+                }
+                i = 7; // break the loop
+                break;
+            }
             case 'r':
+            {
+                blackProtectors++;
+                break;
+            }
+            case 'h':
             {
                 blackProtectors++;
                 break;
@@ -377,6 +1160,11 @@ bool pieceWouldBeCaptured(Position position, short square) {
                 whiteProtectors++;
                 break;
             }
+            case 'H':
+            {
+                whiteProtectors++;
+                break;
+            }
             case 'Q':
             {
                 whiteProtectors++;
@@ -385,7 +1173,7 @@ bool pieceWouldBeCaptured(Position position, short square) {
 
             default:
             {
-                i = 7;
+                i = 7; // breaking from loop
                 break;
             }
             }
@@ -496,26 +1284,72 @@ float heuristicValue(Position position) {
         case 'P': // white pawn
         {
             objectiveValue += 1;
-            /*
-            short move = square + 8;
-            if (move < 64) {
-                if (position.board[move] == '0') { // forward one
+            if (square % 8 != 7) {
+                if (position.board[square + 1] == 'P' || position.board[square + 1] == 'E') {
                     moveCounter++;
                 }
-                if (square % 8 != 0) { // diagonal left
-                    move = square + 7;
-                    if (position.board[move] > 96) { // is a black piece in that square
+                if (square + 9 < 64) {
+                    if (position.board[square + 9] == 'P' || position.board[square + 9] == 'E') {
                         moveCounter++;
                     }
                 }
-                if (square % 8 != 7) { // diagonal right
-                    move = square + 9;
-                    if (position.board[move] > 96) { // is a black piece in that square
+                if (square - 7 >= 0) {
+                    if (position.board[square - 7] == 'P' || position.board[square - 7] == 'E') {
                         moveCounter++;
                     }
                 }
             }
-            */
+            if (square % 8 != 0) {
+                if (position.board[square - 1] == 'P' || position.board[square - 1] == 'E') {
+                    moveCounter++;
+                }
+                if (square + 7 < 64) {
+                    if (position.board[square + 7] == 'P' || position.board[square + 7] == 'E') {
+                        moveCounter++;
+                    }
+                }
+                if (square - 9 >= 0) {
+                    if (position.board[square - 9] == 'P' || position.board[square - 9] == 'E') {
+                        moveCounter++;
+                    }
+                }
+            }
+            break;
+        }
+
+        case 'E': // white double moved pawn
+        {
+            objectiveValue += 1;
+            if (square % 8 != 7) {
+                if (position.board[square + 1] == 'P' || position.board[square + 1] == 'E') {
+                    moveCounter++;
+                }
+                if (square + 9 < 64) {
+                    if (position.board[square + 9] == 'P' || position.board[square + 9] == 'E') {
+                        moveCounter++;
+                    }
+                }
+                if (square - 7 >= 0) {
+                    if (position.board[square - 7] == 'P' || position.board[square - 7] == 'E') {
+                        moveCounter++;
+                    }
+                }
+            }
+            if (square % 8 != 0) {
+                if (position.board[square - 1] == 'P' || position.board[square - 1] == 'E') {
+                    moveCounter++;
+                }
+                if (square + 7 < 64) {
+                    if (position.board[square + 7] == 'P' || position.board[square + 7] == 'E') {
+                        moveCounter++;
+                    }
+                }
+                if (square - 9 >= 0) {
+                    if (position.board[square - 9] == 'P' || position.board[square - 9] == 'E') {
+                        moveCounter++;
+                    }
+                }
+            }
             break;
         }
 
@@ -658,6 +1492,89 @@ float heuristicValue(Position position) {
         }
 
         case 'R': // white rook
+        {
+            objectiveValue += 5;
+            short move;
+            for (short i = 1; i < 7; i++) {
+                move = square + (8 * i);
+                if (move < 64) { // forward
+                    if (position.board[move] > 96 || position.board[move] == '0') {
+                        moveCounter++;
+                        if (position.board[move] > 96) {
+                            break; // obstructed by an enemy piece, stop looking in this direction
+                        }
+                    }
+                    else
+                    {
+                        break; // stop looking in this direction when we see a freindly piece
+                    }
+                }
+                else
+                {
+                    break; // reaching end of board
+                }
+            }
+            for (short i = 1; i < 7; i++) {
+                move = square - (8 * i);
+                if (move >= 0) { // backward
+                    if (position.board[move] > 96 || position.board[move] == '0') {
+                        moveCounter++;
+                        if (position.board[move] > 96) {
+                            break; // obstructed by an enemy piece, stop looking in this direction
+                        }
+                    }
+                    else
+                    {
+                        break; // stop looking in this direction when we see a freindly piece
+                    }
+                }
+                else
+                {
+                    break; // reaching end of board
+                }
+            }
+            for (short i = 1; i < 7; i++) {
+                move = square + i;
+                if (move < 64 && move % 8 != 0) { // right
+                    if (position.board[move] > 96 || position.board[move] == '0') {
+                        moveCounter++;
+                        if (position.board[move] > 96) {
+                            break; // obstructed by an enemy piece, stop looking in this direction
+                        }
+                    }
+                    else
+                    {
+                        break; // stop looking in this direction when we see a freindly piece
+                    }
+                }
+                else
+                {
+                    break; // reaching end of board
+                }
+            }
+            for (short i = 1; i < 7; i++) {
+                move = square - i;
+                if (move >= 0 && move % 8 != 7) { // left
+                    if (position.board[move] > 96 || position.board[move] == '0') {
+                        moveCounter++;
+                        if (position.board[move] > 96) {
+                            break; // obstructed by an enemy piece, stop looking in this direction
+                        }
+                    }
+                    else
+                    {
+                        break; // stop looking in this direction when we see a freindly piece
+                    }
+                }
+                else
+                {
+                    break; // reaching end of board
+                }
+            }
+            break;
+        }
+
+        case 'H': // white moved rook
         {
             objectiveValue += 5;
             short move;
@@ -904,6 +1821,7 @@ float heuristicValue(Position position) {
         case 'K': // white king
         {
             objectiveValue += 100;
+            /*
             short move = square + 8;
             if (move < 64) {
                 if (position.board[move] > 96 || position.board[move] == '0') {
@@ -952,32 +1870,135 @@ float heuristicValue(Position position) {
                     moveCounter++;
                 }
             }
+            */
+            break;
+        }
+
+        case 'C': // white moved king
+        {
+            objectiveValue += 100;
+            /*
+            short move = square + 8;
+            if (move < 64) {
+                if (position.board[move] > 96 || position.board[move] == '0') {
+                    moveCounter++;
+                }
+            }
+            move = square + 9;
+            if (move < 64 && move % 8 != 0) {
+                if (position.board[move] > 96 || position.board[move] == '0') {
+                    moveCounter++;
+                }
+            }
+            move = square + 7;
+            if (move < 64 && move % 8 != 7) {
+                if (position.board[move] > 96 || position.board[move] == '0') {
+                    moveCounter++;
+                }
+            }
+            move = square - 9;
+            if (move >= 0 && move % 8 != 7) {
+                if (position.board[move] > 96 || position.board[move] == '0') {
+                    moveCounter++;
+                }
+            }
+            move = square - 8;
+            if (move >= 0) {
+                if (position.board[move] > 96 || position.board[move] == '0') {
+                    moveCounter++;
+                }
+            }
+            move = square - 7;
+            if (move >= 0 && move % 8 != 0) {
+                if (position.board[move] > 96 || position.board[move] == '0') {
+                    moveCounter++;
+                }
+            }
+            move = square + 1;
+            if (move < 64 && move % 8 != 0) {
+                if (position.board[move] > 96 || position.board[move] == '0') {
+                    moveCounter++;
+                }
+            }
+            move = square - 1;
+            if (move >= 0 && move % 8 != 7) {
+                if (position.board[move] > 96 || position.board[move] == '0') {
+                    moveCounter++;
+                }
+            }
+            */
             break;
         }
 
         case 'p': // black pawn
         {
             objectiveValue -= 1;
-            /*
-            short move = square - 8;
-            if (move >= 0) {
-                if (position.board[move] == '0') { // forward one
+            if (square % 8 != 7) {
+                if (position.board[square + 1] == 'p' || position.board[square + 1] == 'e') {
                     moveCounterBlack++;
                 }
-                if (square % 8 != 0) { // down left
-                    move = square - 9;
-                    if (position.board[move] < 96 && position.board[move] > 64) { // a white piece in that square
+                if (square + 9 < 64) {
+                    if (position.board[square + 9] == 'p' || position.board[square + 9] == 'e') {
                         moveCounterBlack++;
                     }
                 }
-                if (square % 8 != 7) { // down right
-                    move = square - 7;
-                    if (position.board[move] < 96 && position.board[move] > 64) { // a white piece in that square
+                if (square - 7 >= 0) {
+                    if (position.board[square - 7] == 'p' || position.board[square - 7] == 'e') {
                         moveCounterBlack++;
                     }
                 }
             }
-            */
+            if (square % 8 != 0) {
+                if (position.board[square - 1] == 'p' || position.board[square - 1] == 'e') {
+                    moveCounterBlack++;
+                }
+                if (square + 7 < 64) {
+                    if (position.board[square + 7] == 'p' || position.board[square + 7] == 'e') {
+                        moveCounterBlack++;
+                    }
+                }
+                if (square - 9 >= 0) {
+                    if (position.board[square - 9] == 'p' || position.board[square - 9] == 'e') {
+                        moveCounterBlack++;
+                    }
+                }
+            }
+            break;
+        }
+
+        case 'e': // black double moved pawn
+        {
+            objectiveValue -= 1;
+            if (square % 8 != 7) {
+                if (position.board[square + 1] == 'p' || position.board[square + 1] == 'e') {
+                    moveCounterBlack++;
+                }
+                if (square + 9 < 64) {
+                    if (position.board[square + 9] == 'p' || position.board[square + 9] == 'e') {
+                        moveCounterBlack++;
+                    }
+                }
+                if (square - 7 >= 0) {
+                    if (position.board[square - 7] == 'p' || position.board[square - 7] == 'e') {
+                        moveCounterBlack++;
+                    }
+                }
+            }
+            if (square % 8 != 0) {
+                if (position.board[square - 1] == 'p' || position.board[square - 1] == 'e') {
+                    moveCounterBlack++;
+                }
+                if (square + 7 < 64) {
+                    if (position.board[square + 7] == 'p' || position.board[square + 7] == 'e') {
+                        moveCounterBlack++;
+                    }
+                }
+                if (square - 9 >= 0) {
+                    if (position.board[square - 9] == 'p' || position.board[square - 9] == 'e') {
+                        moveCounterBlack++;
+                    }
+                }
+            }
             break;
         }
 
@@ -1120,6 +2141,89 @@ float heuristicValue(Position position) {
         }
 
         case 'r': // black rook
+        {
+            objectiveValue -= 5;
+            short move;
+            for (short i = 1; i < 7; i++) {
+                move = square + (8 * i);
+                if (move < 64) { // forward
+                    if (position.board[move] < 96) {
+                        moveCounterBlack++;
+                        if (position.board[move] != '0') {
+                            break; // obstructed by an enemy piece, stop looking in this direction
+                        }
+                    }
+                    else
+                    {
+                        break; // stop looking in this direction when we see a freindly piece
+                    }
+                }
+                else
+                {
+                    break; // reaching end of board
+                }
+            }
+            for (short i = 1; i < 7; i++) {
+                move = square - (8 * i);
+                if (move >= 0) { // backward
+                    if (position.board[move] < 96) {
+                        moveCounterBlack++;
+                        if (position.board[move] != '0') {
+                            break; // obstructed by an enemy piece, stop looking in this direction
+                        }
+                    }
+                    else
+                    {
+                        break; // stop looking in this direction when we see a freindly piece
+                    }
+                }
+                else
+                {
+                    break; // reaching end of board
+                }
+            }
+            for (short i = 1; i < 7; i++) {
+                move = square + i;
+                if (move < 64 && move % 8 != 0) { // right
+                    if (position.board[move] < 96) {
+                        moveCounterBlack++;
+                        if (position.board[move] != '0') {
+                            break; // obstructed by an enemy piece, stop looking in this direction
+                        }
+                    }
+                    else
+                    {
+                        break; // stop looking in this direction when we see a freindly piece
+                    }
+                }
+                else
+                {
+                    break; // reaching end of board
+                }
+            }
+            for (short i = 1; i < 7; i++) {
+                move = square - i;
+                if (move >= 0 && move % 8 != 7) { // left
+                    if (position.board[move] < 96) {
+                        moveCounterBlack++;
+                        if (position.board[move] != '0') {
+                            break; // obstructed by an enemy piece, stop looking in this direction
+                        }
+                    }
+                    else
+                    {
+                        break; // stop looking in this direction when we see a freindly piece
+                    }
+                }
+                else
+                {
+                    break; // reaching end of board
+                }
+            }
+            break;
+        }
+
+        case 'h': // black moved rook
         {
             objectiveValue -= 5;
             short move;
@@ -1366,6 +2470,7 @@ float heuristicValue(Position position) {
         case 'k': // black king
         {
             objectiveValue -= 100;
+            /*
             short move = square + 8;
             if (move < 64) {
                 if (position.board[move] < 96) {
@@ -1414,6 +2519,63 @@ float heuristicValue(Position position) {
                     moveCounterBlack++;
                 }
             }
+            */
+            break;
+        }
+
+        case 'c': // black moved king
+        {
+            objectiveValue -= 100;
+            /*
+            short move = square + 8;
+            if (move < 64) {
+                if (position.board[move] < 96) {
+                    moveCounterBlack++;
+                }
+            }
+            move = square + 9;
+            if (move < 64 && move % 8 != 0) {
+                if (position.board[move] < 96) {
+                    moveCounterBlack++;
+                }
+            }
+            move = square + 7;
+            if (move < 64 && move % 8 != 7) {
+                if (position.board[move] < 96) {
+                    moveCounterBlack++;
+                }
+            }
+            move = square - 9;
+            if (move >= 0 && move % 8 != 7) {
+                if (position.board[move] < 96) {
+                    moveCounterBlack++;
+                }
+            }
+            move = square - 8;
+            if (move >= 0) {
+                if (position.board[move] < 96) {
+                    moveCounterBlack++;
+                }
+            }
+            move = square - 7;
+            if (move >= 0 && move % 8 != 0) {
+                if (position.board[move] < 96) {
+                    moveCounterBlack++;
+                }
+            }
+            move = square + 1;
+            if (move < 64 && move % 8 != 0) {
+                if (position.board[move] < 96) {
+                    moveCounterBlack++;
+                }
+            }
+            move = square - 1;
+            if (move >= 0 && move % 8 != 7) {
+                if (position.board[move] < 96) {
+                    moveCounterBlack++;
+                }
+            }
+            */
             break;
         }
 
@@ -1438,6 +2600,11 @@ float getIntHeuristicValue(Position position) {
             value += 1.0f;
             break;
         }
+        case 'E':
+        {
+            value += 1.0f;
+            break;
+        }
         case 'N':
         {
             value += 3.0f;
@@ -1453,6 +2620,11 @@ float getIntHeuristicValue(Position position) {
             value += 5.0f;
             break;
         }
+        case 'H':
+        {
+            value += 5.0f;
+            break;
+        }
         case 'Q':
         {
             value += 9.0f;
@@ -1463,8 +2635,18 @@ float getIntHeuristicValue(Position position) {
             value += 100.0f;
             break;
         }
+        case 'C':
+        {
+            value += 100.0f;
+            break;
+        }
 
         case 'p':
+        {
+            value -= 1.0f;
+            break;
+        }
+        case 'e':
         {
             value -= 1.0f;
             break;
@@ -1484,12 +2666,22 @@ float getIntHeuristicValue(Position position) {
             value -= 5.0f;
             break;
         }
+        case 'h':
+        {
+            value -= 5.0f;
+            break;
+        }
         case 'q':
         {
             value -= 9.0f;
             break;
         }
         case 'k':
+        {
+            value -= 100.0f;
+            break;
+        }
+        case 'c':
         {
             value -= 100.0f;
             break;
@@ -1505,6 +2697,7 @@ float getIntHeuristicValue(Position position) {
 }
 float miniMax(Position positions[], short depth, bool white, short& bestMoveFrom, short& bestMoveTo);
 bool createNewPositionAndCallMiniMax(Position positions[], short positionIndex, short fromSqr, short toSqr, short depth, short staticDepth, short &bestMoveFrom, short &bestMoveTo, bool white) {
+    
     // copying board to child and some other things
     for (short i = 0; i < 64; i++) {
         if (positions[positionIndex].board[i] == 'e') { // resetting en passant pawns
@@ -1518,11 +2711,17 @@ bool createNewPositionAndCallMiniMax(Position positions[], short positionIndex, 
             positions[positionIndex + 1].board[i] = positions[positionIndex].board[i];
         }
     }
+
+    if (positions[positionIndex].board[toSqr] == 'K' || positions[positionIndex].board[toSqr] == 'C' || positions[positionIndex].board[toSqr] == 'k' || positions[positionIndex].board[toSqr] == 'c') { // if a king has been captured
+        positions[positionIndex + 1].kingCapture = true;
+    }
+
     positions[positionIndex + 1].lastMove = toSqr; // storing the last move
     positions[positionIndex + 1].board[toSqr] = positions[positionIndex + 1].board[fromSqr]; // moving the piece
     positions[positionIndex + 1].board[fromSqr] = '0'; // making the square it came from empty
     positions[positionIndex + 1].alpha = positions[positionIndex].alpha;
     positions[positionIndex + 1].beta = positions[positionIndex].beta;
+
 
     if (white) {
         float val = miniMax(positions, depth - 1, false, bestMoveFrom, bestMoveTo);
@@ -1553,6 +2752,7 @@ bool createNewPositionAndCallMiniMax(Position positions[], short positionIndex, 
             }
         }
     }
+
     return false; // if we didn't return true earlier and shouldn't prune this branch
 }
 bool createNewPosChangePieceAndCallMiniMax(Position positions[], short positionIndex, short fromSqr, short toSqr, short depth, short staticDepth, short& bestMoveFrom, short& bestMoveTo, bool white, char pieceChangeTo) {
@@ -1569,6 +2769,11 @@ bool createNewPosChangePieceAndCallMiniMax(Position positions[], short positionI
             positions[positionIndex + 1].board[i] = positions[positionIndex].board[i];
         }
     }
+
+    if (positions[positionIndex].board[toSqr] == 'K' || positions[positionIndex].board[toSqr] == 'C' || positions[positionIndex].board[toSqr] == 'k' || positions[positionIndex].board[toSqr] == 'c') { // if a king has been captured
+        positions[positionIndex + 1].kingCapture = true;
+    }
+
     positions[positionIndex + 1].lastMove = toSqr; // storing the last move
     positions[positionIndex + 1].board[fromSqr] = pieceChangeTo; // changing the piece
     positions[positionIndex + 1].board[toSqr] = positions[positionIndex + 1].board[fromSqr]; // moving the piece
@@ -1619,6 +2824,11 @@ bool createNewPosRemovePieceAndCallMiniMax(Position positions[], short positionI
             positions[positionIndex + 1].board[i] = positions[positionIndex].board[i];
         }
     }
+
+    if (positions[positionIndex].board[toSqr] == 'K' || positions[positionIndex].board[toSqr] == 'C' || positions[positionIndex].board[toSqr] == 'k' || positions[positionIndex].board[toSqr] == 'c') { // if a king has been captured
+        positions[positionIndex + 1].kingCapture = true;
+    }
+
     positions[positionIndex + 1].lastMove = toSqr; // storing the last move
     positions[positionIndex + 1].board[toSqr] = positions[positionIndex + 1].board[fromSqr]; // moving the piece
     positions[positionIndex + 1].board[fromSqr] = '0'; // making the square it came from empty
@@ -1655,11 +2865,69 @@ bool createNewPosRemovePieceAndCallMiniMax(Position positions[], short positionI
     }
     return false; // if we didn't return true earlier and shouldn't prune this branch
 }
+bool createNewPosChangeMoveTwoPiecesAndCallMiniMax(Position positions[], short positionIndex, short fromSqr, short toSqr, short depth, short staticDepth, short& bestMoveFrom, short& bestMoveTo, bool white, char pieceChangeTo, short otherPieceTo, short otherPieceFrom, char pieceChangeTo2) {
+    // copying board to child and some other things
+    for (short i = 0; i < 64; i++) {
+        if (positions[positionIndex].board[i] == 'e') { // resetting en passant pawns
+            positions[positionIndex + 1].board[i] = 'p';
+        }
+        else if (positions[positionIndex].board[i] == 'E') {
+            positions[positionIndex + 1].board[i] = 'P';
+        }
+        else
+        {
+            positions[positionIndex + 1].board[i] = positions[positionIndex].board[i];
+        }
+    }
+
+    if (positions[positionIndex].board[toSqr] == 'K' || positions[positionIndex].board[toSqr] == 'C' || positions[positionIndex].board[toSqr] == 'k' || positions[positionIndex].board[toSqr] == 'c') { // if a king has been captured
+        positions[positionIndex + 1].kingCapture = true;
+    }
+
+    positions[positionIndex + 1].lastMove = toSqr; // storing the last move
+    positions[positionIndex + 1].board[fromSqr] = pieceChangeTo; // changing the piece
+    positions[positionIndex + 1].board[otherPieceFrom] = pieceChangeTo2; // changing the other piece
+    positions[positionIndex + 1].board[toSqr] = positions[positionIndex + 1].board[fromSqr]; // moving the piece
+    positions[positionIndex + 1].board[otherPieceTo] = positions[positionIndex + 1].board[otherPieceFrom]; // moving the other piece
+    positions[positionIndex + 1].board[fromSqr] = '0'; // making the square it came from empty
+    positions[positionIndex + 1].board[otherPieceFrom] = '0'; // making the square the other came from empty
+    positions[positionIndex + 1].alpha = positions[positionIndex].alpha;
+    positions[positionIndex + 1].beta = positions[positionIndex].beta;
+
+    if (white) {
+        float val = miniMax(positions, depth - 1, false, bestMoveFrom, bestMoveTo);
+        if (val > positions[positionIndex].alpha) {
+            if (depth == staticDepth) { // record best move if we are the origin
+                bestMoveFrom = fromSqr;
+                bestMoveTo = toSqr;
+            }
+            positions[positionIndex].alpha = val;
+            if (val > positions[positionIndex].beta) { // prune
+                return true;
+            }
+        }
+    }
+    else
+    {
+        float val = miniMax(positions, depth - 1, true, bestMoveFrom, bestMoveTo);
+        if (val < positions[positionIndex].beta) {
+            if (depth == staticDepth) { // record best move if we are the origin
+                bestMoveFrom = fromSqr;
+                bestMoveTo = toSqr;
+            }
+            positions[positionIndex].beta = val;
+            if (positions[positionIndex].alpha > val) { // prune
+                return true;
+            }
+        }
+    }
+    return false; // if we didn't return true earlier and shouldn't prune this branch
+}
 float miniMax(Position positions[], short depth, bool white, short &bestMoveFrom, short &bestMoveTo) {
     static short staticDepth = depth;
     short depthIndex = staticDepth - depth;
 
-    if (depth > 0) {
+    if (depth > 0 && !positions[depthIndex].kingCapture) {
         if (white) {
             for (short i = 0; i < 64; i++) { // for every square of the position
                 short square = i; // because these huge switch statements used to be in another function and I'm lazy
@@ -1915,6 +3183,96 @@ float miniMax(Position positions[], short depth, bool white, short &bestMoveFrom
                 }
 
                 case 'R': // white rook
+                {
+                    short move;
+                    for (short j = 1; j < 8; j++) {
+                        move = square + (8 * j);
+                        if (move < 64) { // forward
+                            if (positions[positionIndex].board[move] > 96 || positions[positionIndex].board[move] == '0') {
+                                if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'H')) { // changing it to a moved rook
+                                    goto PRUNED;
+                                }
+                                if (positions[positionIndex].board[move] > 96) {
+                                    break; // obstructed by an enemy piece, stop looking in this direction
+                                }
+                            }
+                            else
+                            {
+                                break; // stop looking in this direction when we see a freindly piece
+                            }
+                        }
+                        else
+                        {
+                            break; // reaching end of board
+                        }
+                    }
+                    for (short j = 1; j < 8; j++) {
+                        move = square - (8 * j);
+                        if (move >= 0) { // backward
+                            if (positions[positionIndex].board[move] > 96 || positions[positionIndex].board[move] == '0') {
+                                if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'H')) {
+                                    goto PRUNED;
+                                }
+                                if (positions[positionIndex].board[move] > 96) {
+                                    break; // obstructed by an enemy piece, stop looking in this direction
+                                }
+                            }
+                            else
+                            {
+                                break; // stop looking in this direction when we see a freindly piece
+                            }
+                        }
+                        else
+                        {
+                            break; // reaching end of board
+                        }
+                    }
+                    for (short j = 1; j < 8; j++) {
+                        move = square + j;
+                        if (move < 64 && move % 8 != 0) { // right
+                            if (positions[positionIndex].board[move] > 96 || positions[positionIndex].board[move] == '0') {
+                                if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'H')) {
+                                    goto PRUNED;
+                                }
+                                if (positions[positionIndex].board[move] > 96) {
+                                    break; // obstructed by an enemy piece, stop looking in this direction
+                                }
+                            }
+                            else
+                            {
+                                break; // stop looking in this direction when we see a freindly piece
+                            }
+                        }
+                        else
+                        {
+                            break; // reaching end of board
+                        }
+                    }
+                    for (short j = 1; j < 8; j++) {
+                        move = square - j;
+                        if (move >= 0 && move % 8 != 7) { // left
+                            if (positions[positionIndex].board[move] > 96 || positions[positionIndex].board[move] == '0') {
+                                if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'H')) {
+                                    goto PRUNED;
+                                }
+                                if (positions[positionIndex].board[move] > 96) {
+                                    break; // obstructed by an enemy piece, stop looking in this direction
+                                }
+                            }
+                            else
+                            {
+                                break; // stop looking in this direction when we see a freindly piece
+                            }
+                        }
+                        else
+                        {
+                            break; // reaching end of board
+                        }
+                    }
+                    break;
+                }
+
+                case 'H': // moved white rook
                 {
                     short move;
                     for (short j = 1; j < 8; j++) {
@@ -2179,6 +3537,105 @@ float miniMax(Position positions[], short depth, bool white, short &bestMoveFrom
                 }
 
                 case 'K': // white king
+                {
+                    short move = square + 8;
+                    if (move < 64) {
+                        if (positions[positionIndex].board[move] > 96 || positions[positionIndex].board[move] == '0') {
+                            if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'C')) {
+                                goto PRUNED;
+                            }
+                        }
+                    }
+                    move = square + 9;
+                    if (move < 64 && move % 8 != 0) {
+                        if (positions[positionIndex].board[move] > 96 || positions[positionIndex].board[move] == '0') {
+                            if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'C')) {
+                                goto PRUNED;
+                            }
+                        }
+                    }
+                    move = square + 7;
+                    if (move < 64 && move % 8 != 7) {
+                        if (positions[positionIndex].board[move] > 96 || positions[positionIndex].board[move] == '0') {
+                            if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'C')) {
+                                goto PRUNED;
+                            }
+                        }
+                    }
+                    move = square - 9;
+                    if (move >= 0 && move % 8 != 7) {
+                        if (positions[positionIndex].board[move] > 96 || positions[positionIndex].board[move] == '0') {
+                            if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'C')) {
+                                goto PRUNED;
+                            }
+                        }
+                    }
+                    move = square - 8;
+                    if (move >= 0) {
+                        if (positions[positionIndex].board[move] > 96 || positions[positionIndex].board[move] == '0') {
+                            if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'C')) {
+                                goto PRUNED;
+                            }
+                        }
+                    }
+                    move = square - 7;
+                    if (move >= 0 && move % 8 != 0) {
+                        if (positions[positionIndex].board[move] > 96 || positions[positionIndex].board[move] == '0') {
+                            if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'C')) {
+                                goto PRUNED;
+                            }
+                        }
+                    }
+                    move = square + 1;
+                    if (move < 64 && move % 8 != 0) {
+                        if (positions[positionIndex].board[move] > 96 || positions[positionIndex].board[move] == '0') {
+                            if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'C')) {
+                                goto PRUNED;
+                            }
+                        }
+                    }
+                    move = square - 1;
+                    if (move >= 0 && move % 8 != 7) {
+                        if (positions[positionIndex].board[move] > 96 || positions[positionIndex].board[move] == '0') {
+                            if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'C')) {
+                                goto PRUNED;
+                            }
+                        }
+                    }
+                    // check for castling, checking that we, and the spaces in between us and the rook are not in check, and if the rook hasn't moved yet
+                    if (positions[positionIndex].board[7] == 'R') { // castling king-side
+                        if (positions[positionIndex].board[6] == '0' && positions[positionIndex].board[5] == '0') {
+                            if (!isSquareInCheckByBlack(positions[positionIndex], 4)) {
+                                if (!isSquareInCheckByBlack(positions[positionIndex], 5)) {
+                                    if (!isSquareInCheckByBlack(positions[positionIndex], 6)) {
+                                        if (createNewPosChangeMoveTwoPiecesAndCallMiniMax(positions, positionIndex, i, 6, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'C', 5, 7, 'H')) {
+                                            goto PRUNED;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                    if (positions[positionIndex].board[0] == 'R') { // castling queen-side
+                        if (positions[positionIndex].board[1] == '0' && positions[positionIndex].board[2] == '0' && positions[positionIndex].board[3] == '0') {
+                            if (!isSquareInCheckByBlack(positions[positionIndex], 4)) {
+                                if (!isSquareInCheckByBlack(positions[positionIndex], 3)) {
+                                    if (!isSquareInCheckByBlack(positions[positionIndex], 2)) {
+                                        if (!isSquareInCheckByBlack(positions[positionIndex], 1)) {
+                                            if (createNewPosChangeMoveTwoPiecesAndCallMiniMax(positions, positionIndex, i, 2, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'C', 0, 3, 'H')) {
+                                                goto PRUNED;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+
+                case 'C': // moved white king
                 {
                     short move = square + 8;
                     if (move < 64) {
@@ -2500,6 +3957,96 @@ float miniMax(Position positions[], short depth, bool white, short &bestMoveFrom
                         move = square + (8 * j);
                         if (move < 64) { // forward
                             if (positions[positionIndex].board[move] < 96) {
+                                if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'h')) {
+                                    goto PRUNED;
+                                }
+                                if (positions[positionIndex].board[move] != '0') {
+                                    break; // obstructed by an enemy piece,stop looking in this direction
+                                }
+                            }
+                            else
+                            {
+                                break; // stop looking in this direction when we see a freindly piece
+                            }
+                        }
+                        else
+                        {
+                            break; // reaching end of board
+                        }
+                    }
+                    for (short j = 1; j < 8; j++) {
+                        move = square - (8 * j);
+                        if (move >= 0) { // backward
+                            if (positions[positionIndex].board[move] < 96) {
+                                if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'h')) {
+                                    goto PRUNED;
+                                }
+                                if (positions[positionIndex].board[move] != '0') {
+                                    break; // obstructed by an enemy piece,stop looking in this direction
+                                }
+                            }
+                            else
+                            {
+                                break; // stop looking in this direction when we see a freindly piece
+                            }
+                        }
+                        else
+                        {
+                            break; // reaching end of board
+                        }
+                    }
+                    for (short j = 1; j < 8; j++) {
+                        move = square + j;
+                        if (move < 64 && move % 8 != 0) { // right
+                            if (positions[positionIndex].board[move] < 96) {
+                                if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'h')) {
+                                    goto PRUNED;
+                                }
+                                if (positions[positionIndex].board[move] != '0') {
+                                    break; // obstructed by an enemy piece,stop looking in this direction
+                                }
+                            }
+                            else
+                            {
+                                break; // stop looking in this direction when we see a freindly piece
+                            }
+                        }
+                        else
+                        {
+                            break; // reaching end of board
+                        }
+                    }
+                    for (short j = 1; j < 8; j++) {
+                        move = square - j;
+                        if (move >= 0 && move % 8 != 7) { // left
+                            if (positions[positionIndex].board[move] < 96) {
+                                if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'h')) {
+                                    goto PRUNED;
+                                }
+                                if (positions[positionIndex].board[move] != '0') {
+                                    break; // obstructed by an enemy piece,stop looking in this direction
+                                }
+                            }
+                            else
+                            {
+                                break; // stop looking in this direction when we see a freindly piece
+                            }
+                        }
+                        else
+                        {
+                            break; // reaching end of board
+                        }
+                    }
+                    break;
+                }
+
+                case 'h': // moved black rook
+                {
+                    short move;
+                    for (short j = 1; j < 8; j++) {
+                        move = square + (8 * j);
+                        if (move < 64) { // forward
+                            if (positions[positionIndex].board[move] < 96) {
                                 if (createNewPositionAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white)) {
                                     goto PRUNED;
                                 }
@@ -2762,6 +4309,104 @@ float miniMax(Position positions[], short depth, bool white, short &bestMoveFrom
                     short move = square + 8;
                     if (move < 64) {
                         if (positions[positionIndex].board[move] < 96) {
+                            if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'c')) {
+                                goto PRUNED;
+                            }
+                        }
+                    }
+                    move = square + 9;
+                    if (move < 64 && move % 8 != 0) {
+                        if (positions[positionIndex].board[move] < 96) {
+                            if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'c')) {
+                                goto PRUNED;
+                            }
+                        }
+                    }
+                    move = square + 7;
+                    if (move < 64 && move % 8 != 7) {
+                        if (positions[positionIndex].board[move] < 96) {
+                            if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'c')) {
+                                goto PRUNED;
+                            }
+                        }
+                    }
+                    move = square - 9;
+                    if (move >= 0 && move % 8 != 7) {
+                        if (positions[positionIndex].board[move] < 96) {
+                            if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'c')) {
+                                goto PRUNED;
+                            }
+                        }
+                    }
+                    move = square - 8;
+                    if (move >= 0) {
+                        if (positions[positionIndex].board[move] < 96) {
+                            if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'c')) {
+                                goto PRUNED;
+                            }
+                        }
+                    }
+                    move = square - 7;
+                    if (move >= 0 && move % 8 != 0) {
+                        if (positions[positionIndex].board[move] < 96) {
+                            if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'c')) {
+                                goto PRUNED;
+                            }
+                        }
+                    }
+                    move = square + 1;
+                    if (move < 64 && move % 8 != 0) {
+                        if (positions[positionIndex].board[move] < 96) {
+                            if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'c')) {
+                                goto PRUNED;
+                            }
+                        }
+                    }
+                    move = square - 1;
+                    if (move >= 0 && move % 8 != 7) {
+                        if (positions[positionIndex].board[move] < 96) {
+                            if (createNewPosChangePieceAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'c')) {
+                                goto PRUNED;
+                            }
+                        }
+                    }
+                    // check for castling, checking that we, and the spaces in between us and the rook are not in check, and if the rook hasn't moved yet
+                    if (positions[positionIndex].board[63] == 'r') { // castling king-side
+                        if (positions[positionIndex].board[62] == '0' && positions[positionIndex].board[61] == '0') {
+                            if (!isSquareInCheckByWhite(positions[positionIndex], 60)) {
+                                if (!isSquareInCheckByWhite(positions[positionIndex], 61)) {
+                                    if (!isSquareInCheckByWhite(positions[positionIndex], 62)) {
+                                        if (createNewPosChangeMoveTwoPiecesAndCallMiniMax(positions, positionIndex, i, 62, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'c', 61, 63, 'h')) {
+                                            goto PRUNED;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (positions[positionIndex].board[56] == 'r') { // castling queen-side
+                        if (positions[positionIndex].board[57] == '0' && positions[positionIndex].board[58] == '0' && positions[positionIndex].board[59] == '0') {
+                            if (!isSquareInCheckByWhite(positions[positionIndex], 60)) {
+                                if (!isSquareInCheckByWhite(positions[positionIndex], 59)) {
+                                    if (!isSquareInCheckByWhite(positions[positionIndex], 58)) {
+                                        if (!isSquareInCheckByWhite(positions[positionIndex], 57)) {
+                                            if (createNewPosChangeMoveTwoPiecesAndCallMiniMax(positions, positionIndex, i, 58, depth, staticDepth, bestMoveFrom, bestMoveTo, white, 'c', 56, 59, 'h')) {
+                                                goto PRUNED;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+
+                case 'c': // moved black king
+                {
+                    short move = square + 8;
+                    if (move < 64) {
+                        if (positions[positionIndex].board[move] < 96) {
                             if (createNewPositionAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white)) {
                                 goto PRUNED;
                             }
@@ -2834,9 +4479,16 @@ float miniMax(Position positions[], short depth, bool white, short &bestMoveFrom
     }
     else // deepest layer
     {
-        if (positions[depthIndex - 1].board[positions[depthIndex].lastMove] != '0') { // we captured a piece on the deepest layer
-            if (pieceWouldBeCaptured(positions[depthIndex], positions[depthIndex].lastMove)) { // if it would be captured back
-               positions[depthIndex].board[positions[depthIndex].lastMove] = '0'; // removing the piece to score the position as if it were captured back
+        char lastMoveID = positions[depthIndex - 1].board[positions[depthIndex].lastMove];
+        if (lastMoveID != '0') { // we captured a piece on the deepest layer
+            if (!positions[depthIndex].kingCapture){ // not doing this to a king
+                if (pieceWouldBeCaptured(positions[depthIndex], positions[depthIndex].lastMove)) { // if it would be captured back
+                    positions[depthIndex].board[positions[depthIndex].lastMove] = '0'; // removing the piece to score the position as if it were captured back
+                }
+            }
+            else
+            {
+                positions[depthIndex].kingCapture = false; // resetting
             }
         }
         //float value = getIntHeuristicValue(positions[depthIndex]); // assigning value of the position
@@ -2849,6 +4501,21 @@ float miniMax(Position positions[], short depth, bool white, short &bestMoveFrom
         {
             positions[depthIndex].beta = value;
         }
+
+        /*
+        if (positions[1].board[16] == 'p') {
+            if (positions[2].board[16] == 'P') {
+                if (positions[3].board[16] == 'h') {
+
+                    printBoard(positions[depthIndex]);
+
+                    std::cout << "wouldPieceBeCaptured: " << pieceWouldBeCaptured(positions[depthIndex], 16) << '\n';
+
+                }
+            }
+        }*/
+
+
     }
     
 PRUNED:
@@ -2919,6 +4586,36 @@ void findBestMove(Position positions[], short depth, bool white) {
             }
         }
     }
+
+    if (positions[0].board[bestMoveFrom] == 'K') {
+        if (bestMoveFrom + 2 == bestMoveTo) { // castling king side
+            positions[0].board[7] = '0';
+            positions[0].board[5] = 'H'; // moving the rook
+        }
+        if (bestMoveFrom - 2 == bestMoveTo) { // castling queen side
+            positions[0].board[0] = '0';
+            positions[0].board[3] = 'H';
+        }
+        positions[0].board[bestMoveFrom] = 'C';
+    }
+    if (positions[0].board[bestMoveFrom] == 'R') {
+        positions[0].board[bestMoveFrom] = 'H'; // changing rook to a moved rook
+    }
+    if (positions[0].board[bestMoveFrom] == 'k') {
+        if (bestMoveFrom + 2 == bestMoveTo) { 
+            positions[0].board[63] = '0';
+            positions[0].board[61] = 'h';
+        }
+        if (bestMoveFrom - 2 == bestMoveTo) { 
+            positions[0].board[56] = '0';
+            positions[0].board[59] = 'h';
+        }
+        positions[0].board[bestMoveFrom] = 'c';
+    }
+    if (positions[0].board[bestMoveFrom] == 'r') {
+        positions[0].board[bestMoveFrom] = 'h';
+    }
+
     positions[0].board[bestMoveTo] = positions[0].board[bestMoveFrom]; // applying the move
     positions[0].board[bestMoveFrom] = '0';
 
@@ -2992,26 +4689,80 @@ void debuggingPosition1(Position& position) {
         position.board[i] = '0';
     }
 
-    position.board[27] = 'R';
-    position.board[28] = 'R';
-    position.board[29] = 'r';
-    position.board[16] = 'r';
+    position.board[56] = 'r';
+    //position.board[63] = 'r';
+    position.board[0] = 'R';
+    //position.board[7] = 'R';
 
 
     for (int i = 0; i < 8; i++) {
-        //position.board[i + 8] = 'P';
-        //position.board[i + 48] = 'p';
+        position.board[i + 8] = 'P';
+        position.board[i + 48] = 'p';
     }
+    position.board[10] = '0';
+    position.board[11] = '0';
+    position.board[50] = '0';
+    position.board[51] = '0';
+
+    position.board[4] = 'K';
+    position.board[59] = 'c';
+
+}
+
+void printFancyBoard(Position position) {
+    
+    bool pawn[] = {
+        0,0,0,0,0,
+        0,0,1,0,0,
+        0,1,1,1,0,
+        0,0,1,0,0,
+        0,1,1,1,0,
+    };
+    bool knight[] = {
+        0,0,1,0,0,
+        0,1,1,1,0,
+        0,1,1,1,1,
+        0,0,1,0,0,
+        0,1,1,1,0,
+    };
+    bool bishop[] = {
+        0,0,1,0,0,
+        0,1,1,1,0,
+        0,0,1,0,0,
+        0,0,1,0,0,
+        0,1,1,1,0,
+    };
+    bool rook[] = {
+        1,0,1,0,1,
+        1,1,1,1,1,
+        0,1,1,1,0,
+        0,1,1,1,0,
+        0,1,1,1,0,
+    };
+    bool queen[] = {
+        0,1,0,1,0,
+        0,1,1,1,0,
+        0,0,1,0,0,
+        0,0,1,0,0,
+        0,1,1,1,0,
+    };
+    bool king[] = {
+        0,0,1,0,0,
+        1,1,1,1,1,
+        0,0,1,0,0,
+        0,0,1,0,0,
+        0,1,1,1,0,
+    };
 
 }
 
 int main()
 {
-    const short depth = 5;
+    const short depth = 3;
     Position positions[depth + 1]; // buffer for position data, the first element is the current position
 
     arrangeStartingBoard(positions[0]);
-    //loadPosition(positions[0], "debug12.txt"); // changes alpha to 0 for some reason
+    //loadPosition(positions[0], "debug16.txt"); // changes alpha to 0 for some reason
     //debuggingPosition1(positions[0]);
 
     Position lastPosition = Position();
@@ -3068,7 +4819,6 @@ int main()
 
         printBoard(positions[0]);
         std::cout << "Heuristic value: " << heuristicValue(positions[0]) << '\n';
-        //std::cout << " from: " << moveFrom << " to: " << moveTo << '\n';
         std::cout << duration.count() / 1000.0 << " milliseconds" << '\n';
 
         /*
@@ -3086,8 +4836,10 @@ int main()
 // TO-DO LIST
 //figure out a way to stop black's blunder in debug12.txt, it thinks it would win white's bishop if it dared taking the pawn, but doesn't see that the bishop can both trade away and threaten the king (or queen) at the same time
 
-// check and checkmate
-// castling
+// check and checkmate - partly implemented, needs testing
+// castling - implemented, needs testing
+
+// make user interface with ASCII art
 
 
 
