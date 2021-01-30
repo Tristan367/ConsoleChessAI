@@ -4711,48 +4711,640 @@ void debuggingPosition1(Position& position) {
 
 void printFancyBoard(Position position) {
     
-    bool pawn[] = {
-        0,0,0,0,0,
-        0,0,1,0,0,
-        0,1,1,1,0,
-        0,0,1,0,0,
-        0,1,1,1,0,
+    /*
+
+  ( )
+  < >
+ /___\
+
+  { \
+ {   \
+  < >
+ /___\
+
+  / \
+  < >
+  | |
+ /___\
+
+ _ _ _
+ |   |
+ |   |
+ |___|
+
+ \^|^/
+  < >
+  | |
+ /___\
+
+   |
+___|___
+  < >
+  | |
+ /___\
+
+
+  */
+    char whiteChar = 219;
+    char wPawn[] = {
+       ' ', ' ',' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
+       ' ', ' ',' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
+       ' ', ' ',' ', ' ', '(', 219, ')', ' ', ' ',  ' ', ' ',
+       ' ', ' ',' ', ' ', '<', 219, '>', ' ', ' ',  ' ', ' ',
+       ' ', ' ',' ', '/', 219, 219, 219, '\\', ' ', ' ', ' ',
+       ' ', ' ',' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
+
     };
-    bool knight[] = {
-        0,0,1,0,0,
-        0,1,1,1,0,
-        0,1,1,1,1,
-        0,0,1,0,0,
-        0,1,1,1,0,
+    char bPawn[] = {
+       ' ',' ',' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
+       ' ',' ',' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
+       ' ',' ',' ', ' ', '(', '$', ')', ' ', ' ',  ' ', ' ',
+       ' ',' ',' ', ' ', '<', '$', '>', ' ', ' ',  ' ', ' ',
+       ' ',' ',' ', '/', '_', '_', '_', '\\', ' ', ' ', ' ',
+       ' ',' ',' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
+
     };
-    bool bishop[] = {
-        0,0,1,0,0,
-        0,1,1,1,0,
-        0,0,1,0,0,
-        0,0,1,0,0,
-        0,1,1,1,0,
+    char wKnight[] = {
+        ' ',' ',' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
+        ' ',' ',' ', ' ', '{', 219, '\\', ' ', ' ', ' ', ' ',
+        ' ',' ',' ', '{', 219, 219, 219, '\\', ' ', ' ', ' ',
+        ' ',' ',' ', ' ', '<', 219, '>', ' ', ' ',  ' ', ' ',
+        ' ',' ',' ', '/', 219, 219, 219, '\\', ' ', ' ', ' ',
+        ' ',' ',' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
+
     };
-    bool rook[] = {
-        1,0,1,0,1,
-        1,1,1,1,1,
-        0,1,1,1,0,
-        0,1,1,1,0,
-        0,1,1,1,0,
+    char bKnight[] = {
+       ' ',' ',' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
+       ' ',' ',' ', ' ', '{', '$', '\\', ' ', ' ', ' ', ' ',
+       ' ',' ',' ', '{', '$', '$', '$', '\\', ' ', ' ', ' ',
+       ' ',' ',' ', ' ', '<', '$', '>', ' ', ' ',  ' ', ' ',
+       ' ',' ',' ', '/', '_', '_', '_', '\\', ' ', ' ', ' ',
+       ' ',' ',' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
+
     };
-    bool queen[] = {
-        0,1,0,1,0,
-        0,1,1,1,0,
-        0,0,1,0,0,
-        0,0,1,0,0,
-        0,1,1,1,0,
+    char wBishop[] = {
+      ' ',' ',' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
+      ' ',' ',' ', ' ', '/', 219, '\\', ' ', ' ', ' ', ' ',
+      ' ',' ',' ', ' ', '<', 219, '>', ' ', ' ',  ' ', ' ',
+      ' ',' ',' ', ' ', '|', 219, '|', ' ', ' ',  ' ', ' ',
+      ' ',' ',' ', '/', 219, 219, 219, '\\', ' ', ' ', ' ',
+      ' ',' ',' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
     };
-    bool king[] = {
-        0,0,1,0,0,
-        1,1,1,1,1,
-        0,0,1,0,0,
-        0,0,1,0,0,
-        0,1,1,1,0,
+    char bBishop[] = {
+       ' ',' ',' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
+       ' ',' ',' ', ' ', '/', '$', '\\', ' ', ' ', ' ', ' ',
+       ' ',' ',' ', ' ', '<', '$', '>', ' ', ' ',  ' ', ' ',
+       ' ',' ',' ', ' ', '|', '$', '|', ' ', ' ',  ' ', ' ',
+       ' ',' ',' ', '/', '_', '_', '_', '\\', ' ', ' ', ' ',
+       ' ',' ',' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
     };
+    char bRook[] = {
+      ' ',' ',' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
+      ' ',' ',' ', '=', '_', '=', '_', '=', ' ',  ' ', ' ',
+      ' ',' ',' ', '|', '$', '$', '$', '|', ' ',  ' ', ' ',
+      ' ',' ',' ', '|', '$', '$', '$', '|', ' ',  ' ', ' ',
+      ' ',' ',' ', '|', '_', '_', '_', '|', ' ',  ' ', ' ',
+      ' ',' ',' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
+    };
+    char wRook[] = {
+      ' ',' ',' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
+      ' ',' ',' ', '=', '_', '=', '_', '=', ' ',  ' ', ' ',
+      ' ',' ',' ', '|', 219, 219, 219, '|', ' ',  ' ', ' ',
+      ' ',' ',' ', '|', 219, 219, 219, '|', ' ',  ' ', ' ',
+      ' ',' ',' ', '|', 219, 219, 219, '|', ' ',  ' ', ' ',
+      ' ',' ',' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
+    };
+    char bQueen[] = {
+       ' ',' ',' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
+       ' ',' ',' ', '\\', '^', '|', '^', '/', ' ', ' ', ' ',
+       ' ',' ',' ', ' ', '<', '$', '>', ' ', ' ',  ' ', ' ',
+       ' ',' ',' ', ' ', '|', '$', '|', ' ', ' ',  ' ', ' ',
+       ' ',' ',' ', '/', '_', '_', '_', '\\', ' ', ' ', ' ',
+       ' ',' ',' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
+    };
+    char wQueen[] = {
+       ' ',' ',' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
+       ' ',' ',' ', '\\', '^', '|', '^', '/', ' ', ' ', ' ',
+       ' ',' ',' ', ' ', '<', 219, '>', ' ', ' ',  ' ', ' ',
+       ' ',' ',' ', ' ', '|', 219, '|', ' ', ' ',  ' ', ' ',
+       ' ',' ',' ', '/', 219, 219, 219, '\\', ' ', ' ', ' ',
+       ' ',' ',' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
+    };
+    char bKing[] = {
+      ' ',' ',' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
+      ' ',' ',' ', '_', '_', '|', '_', '_', ' ',  ' ', ' ',
+      ' ',' ',' ', ' ', '<', '$', '>', ' ', ' ',  ' ', ' ',
+      ' ',' ',' ', ' ', '|', '$', '|', ' ', ' ',  ' ', ' ',
+      ' ',' ',' ', '/', '_', '_', '_', '\\', ' ', ' ', ' ',
+      ' ',' ',' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
+    };
+    char wKing[] = {
+     ' ',' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
+     ' ',' ', ' ', '_', '_', '|', '_', '_', ' ',  ' ', ' ',
+     ' ',' ', ' ', ' ', '<', 219, '>', ' ', ' ',  ' ', ' ',
+     ' ',' ', ' ', ' ', '|', 219, '|', ' ', ' ',  ' ', ' ',
+     ' ',' ', ' ', '/', 219, 219, 219, '\\', ' ', ' ', ' ',
+     ' ',' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',  ' ', ' ',
+    };
+
+    const int squareSize = 11;
+    const int boardRowSize = squareSize * 8;
+    const int bufferSize = squareSize * 6 * 64;
+    char boardBuffer[bufferSize];
+    int counter = 0;
+    char rowIDbuffer[8];
+    for (short i = 7; i >= 0; i--){
+        for (int j = 0; j < 8; j++) {
+            rowIDbuffer[j] = position.board[i * 8 + j];
+        }
+
+        for (int l = 0; l < 6; l++) { // for each row row
+            for (int j = 0; j < 8; j++) { // for each column
+                for (int k = 0; k < 11; k++) { // for each column column
+
+                    switch (rowIDbuffer[j])
+                    {
+
+                    case 'P':
+                    {
+                        if (wPawn[k + (l * squareSize)] == ' ') {
+                            if (j % 2 == (i % 2)) {
+                                boardBuffer[counter] = '.';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                        }
+                        else
+                        {
+                            boardBuffer[counter] = wPawn[k + (l * squareSize)];
+                            counter++;
+                        }
+                        break;
+                    }
+                    case 'E':
+                    {
+                        if (wPawn[k + (l * squareSize)] == ' ') {
+                            if (j % 2 == (i % 2)) {
+                                boardBuffer[counter] = '.';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                        }
+                        else
+                        {
+                            boardBuffer[counter] = wPawn[k + (l * squareSize)];
+                            counter++;
+                        }
+                        break;
+                    }
+                    case 'p':
+                    {
+                        char c = bPawn[k + (l * squareSize)];
+                        if (c == ' ') {
+                            if (j % 2 == (i % 2)) {
+                                boardBuffer[counter] = '.';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                        }
+                        else
+                        {
+                            if (c == '$') {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = c;
+                                counter++;
+                            }
+                            
+                        }
+                        break;
+                    }
+                    case 'e':
+                    {
+                        char c = bPawn[k + (l * squareSize)];
+                        if (c == ' ') {
+                            if (j % 2 == (i % 2)) {
+                                boardBuffer[counter] = '.';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                        }
+                        else
+                        {
+                            if (c == '$') {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = c;
+                                counter++;
+                            }
+
+                        }
+                        break;
+                    }
+
+                    case 'N':
+                    {
+                        char c = wKnight[k + (l * squareSize)];
+                        if (c == ' ') {
+                            if (j % 2 == (i % 2)) {
+                                boardBuffer[counter] = '.';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                        }
+                        else
+                        {
+                            boardBuffer[counter] = c;
+                            counter++;
+                        }
+                        break;
+                    }
+                    case 'n':
+                    {
+                        char c = bKnight[k + (l * squareSize)];
+                        if (c == ' ') {
+                            if (j % 2 == (i % 2)) {
+                                boardBuffer[counter] = '.';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                        }
+                        else
+                        {
+                            if (c == '$') {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = c;
+                                counter++;
+                            }
+
+                        }
+                        break;
+                    }
+
+                    case 'B':
+                    {
+                        char c = wBishop[k + (l * squareSize)];
+                        if (c == ' ') {
+                            if (j % 2 == (i % 2)) {
+                                boardBuffer[counter] = '.';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                        }
+                        else
+                        {
+                            boardBuffer[counter] = c;
+                            counter++;
+                        }
+                        break;
+                    }
+                    case 'b':
+                    {
+                        char c = bBishop[k + (l * squareSize)];
+                        if (c == ' ') {
+                            if (j % 2 == (i % 2)) {
+                                boardBuffer[counter] = '.';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                        }
+                        else
+                        {
+                            if (c == '$') {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = c;
+                                counter++;
+                            }
+
+                        }
+                        break;
+                    }
+
+                    case 'R':
+                    {
+                        char c = wRook[k + (l * squareSize)];
+                        if (c == ' ') {
+                            if (j % 2 == (i % 2)) {
+                                boardBuffer[counter] = '.';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                        }
+                        else
+                        {
+                            boardBuffer[counter] = c;
+                            counter++;
+                        }
+                        break;
+                    }
+                    case 'H':
+                    {
+                        char c = wRook[k + (l * squareSize)];
+                        if (c == ' ') {
+                            if (j % 2 == (i % 2)) {
+                                boardBuffer[counter] = '.';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                        }
+                        else
+                        {
+                            boardBuffer[counter] = c;
+                            counter++;
+                        }
+                        break;
+                    }
+                    case 'r':
+                    {
+                        char c = bRook[k + (l * squareSize)];
+                        if (c == ' ') {
+                            if (j % 2 == (i % 2)) {
+                                boardBuffer[counter] = '.';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                        }
+                        else
+                        {
+                            if (c == '$') {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = c;
+                                counter++;
+                            }
+
+                        }
+                        break;
+                    }
+                    case 'h':
+                    {
+                        char c = bRook[k + (l * squareSize)];
+                        if (c == ' ') {
+                            if (j % 2 == (i % 2)) {
+                                boardBuffer[counter] = '.';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                        }
+                        else
+                        {
+                            if (c == '$') {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = c;
+                                counter++;
+                            }
+
+                        }
+                        break;
+                    }
+
+                    case 'Q':
+                    {
+                        char c = wQueen[k + (l * squareSize)];
+                        if (c == ' ') {
+                            if (j % 2 == (i % 2)) {
+                                boardBuffer[counter] = '.';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                        }
+                        else
+                        {
+                            boardBuffer[counter] = c;
+                            counter++;
+                        }
+                        break;
+                    }
+                    case 'q':
+                    {
+                        char c = bQueen[k + (l * squareSize)];
+                        if (c == ' ') {
+                            if (j % 2 == (i % 2)) {
+                                boardBuffer[counter] = '.';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                        }
+                        else
+                        {
+                            if (c == '$') {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = c;
+                                counter++;
+                            }
+
+                        }
+                        break;
+                    }
+
+                    case 'K':
+                    {
+                        char c = wKing[k + (l * squareSize)];
+                        if (c == ' ') {
+                            if (j % 2 == (i % 2)) {
+                                boardBuffer[counter] = '.';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                        }
+                        else
+                        {
+                            boardBuffer[counter] = c;
+                            counter++;
+                        }
+                        break;
+                    }
+                    case 'C':
+                    {
+                        char c = wKing[k + (l * squareSize)];
+                        if (c == ' ') {
+                            if (j % 2 == (i % 2)) {
+                                boardBuffer[counter] = '.';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                        }
+                        else
+                        {
+                            boardBuffer[counter] = c;
+                            counter++;
+                        }
+                        break;
+                    }
+                    case 'k':
+                    {
+                        char c = bKing[k + (l * squareSize)];
+                        if (c == ' ') {
+                            if (j % 2 == (i % 2)) {
+                                boardBuffer[counter] = '.';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                        }
+                        else
+                        {
+                            if (c == '$') {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = c;
+                                counter++;
+                            }
+
+                        }
+                        break;
+                    }
+                    case 'c':
+                    {
+                        char c = bKing[k + (l * squareSize)];
+                        if (c == ' ') {
+                            if (j % 2 == (i % 2)) {
+                                boardBuffer[counter] = '.';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                        }
+                        else
+                        {
+                            if (c == '$') {
+                                boardBuffer[counter] = ' ';
+                                counter++;
+                            }
+                            else
+                            {
+                                boardBuffer[counter] = c;
+                                counter++;
+                            }
+
+                        }
+                        break;
+                    }
+
+                    default:
+                        
+                        if (j % 2 == (i % 2)) {
+                            boardBuffer[counter] = '.';
+                            counter++;
+                        }
+                        else
+                        {
+                            boardBuffer[counter] = ' ';
+                            counter++;
+                        }
+
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    std::cout << '\n';
+    for (int i = 0; i < bufferSize; i++) {
+        std::cout << boardBuffer[i];
+        if (i % boardRowSize == boardRowSize - 1) {
+            std::cout << '\n';
+        }
+    }
 
 }
 
@@ -4768,8 +5360,10 @@ int main()
     Position lastPosition = Position();
     copyPosition(lastPosition, positions[0]);
 
-    printBoard(positions[0]);
+    //printBoard(positions[0]);
     std::string input;
+
+    printFancyBoard(positions[0]);
 
     while (true)
     {
@@ -4816,10 +5410,12 @@ int main()
         destCoord.Y = 0;
         SetConsoleCursorPosition(hStdout, destCoord);
         */
-
-        printBoard(positions[0]);
+        printFancyBoard(positions[0]);
+        //printBoard(positions[0]);
         std::cout << "Heuristic value: " << heuristicValue(positions[0]) << '\n';
         std::cout << duration.count() / 1000.0 << " milliseconds" << '\n';
+
+        
 
         /*
         destCoord.X = 0;
