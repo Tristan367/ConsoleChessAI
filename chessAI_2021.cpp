@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 #include <windows.h>
 #include <chrono>
 
@@ -1284,72 +1285,80 @@ float heuristicValue(Position position) {
         case 'P': // white pawn
         {
             objectiveValue += 1;
+
+            bool hasLeftNeighbor = false;
+            bool hasRightNeighbor = false;
             if (square % 8 != 7) {
                 if (position.board[square + 1] == 'P' || position.board[square + 1] == 'E') {
-                    moveCounter++;
+                    hasRightNeighbor = true;
                 }
                 if (square + 9 < 64) {
                     if (position.board[square + 9] == 'P' || position.board[square + 9] == 'E') {
-                        moveCounter++;
+                        hasRightNeighbor = true;
                     }
                 }
                 if (square - 7 >= 0) {
                     if (position.board[square - 7] == 'P' || position.board[square - 7] == 'E') {
-                        moveCounter++;
+                        hasRightNeighbor = true;
                     }
                 }
             }
             if (square % 8 != 0) {
                 if (position.board[square - 1] == 'P' || position.board[square - 1] == 'E') {
-                    moveCounter++;
+                    hasLeftNeighbor = true;
                 }
                 if (square + 7 < 64) {
                     if (position.board[square + 7] == 'P' || position.board[square + 7] == 'E') {
-                        moveCounter++;
+                        hasLeftNeighbor = true;
                     }
                 }
                 if (square - 9 >= 0) {
                     if (position.board[square - 9] == 'P' || position.board[square - 9] == 'E') {
-                        moveCounter++;
+                        hasLeftNeighbor = true;
                     }
                 }
             }
+            moveCounter += hasLeftNeighbor + hasRightNeighbor;
+
             break;
         }
 
         case 'E': // white double moved pawn
         {
             objectiveValue += 1;
+            bool hasLeftNeighbor = false;
+            bool hasRightNeighbor = false;
             if (square % 8 != 7) {
                 if (position.board[square + 1] == 'P' || position.board[square + 1] == 'E') {
-                    moveCounter++;
+                    hasRightNeighbor = true;
                 }
                 if (square + 9 < 64) {
                     if (position.board[square + 9] == 'P' || position.board[square + 9] == 'E') {
-                        moveCounter++;
+                        hasRightNeighbor = true;
                     }
                 }
                 if (square - 7 >= 0) {
                     if (position.board[square - 7] == 'P' || position.board[square - 7] == 'E') {
-                        moveCounter++;
+                        hasRightNeighbor = true;
                     }
                 }
             }
             if (square % 8 != 0) {
                 if (position.board[square - 1] == 'P' || position.board[square - 1] == 'E') {
-                    moveCounter++;
+                    hasLeftNeighbor = true;
                 }
                 if (square + 7 < 64) {
                     if (position.board[square + 7] == 'P' || position.board[square + 7] == 'E') {
-                        moveCounter++;
+                        hasLeftNeighbor = true;
                     }
                 }
                 if (square - 9 >= 0) {
                     if (position.board[square - 9] == 'P' || position.board[square - 9] == 'E') {
-                        moveCounter++;
+                        hasLeftNeighbor = true;
                     }
                 }
             }
+            moveCounter += hasLeftNeighbor + hasRightNeighbor;
             break;
         }
 
@@ -1933,72 +1942,78 @@ float heuristicValue(Position position) {
         case 'p': // black pawn
         {
             objectiveValue -= 1;
+            bool hasLeftNeighbor = false;
+            bool hasRightNeighbor = false;
             if (square % 8 != 7) {
                 if (position.board[square + 1] == 'p' || position.board[square + 1] == 'e') {
-                    moveCounterBlack++;
+                    hasRightNeighbor = true;
                 }
                 if (square + 9 < 64) {
                     if (position.board[square + 9] == 'p' || position.board[square + 9] == 'e') {
-                        moveCounterBlack++;
+                        hasRightNeighbor = true;
                     }
                 }
                 if (square - 7 >= 0) {
                     if (position.board[square - 7] == 'p' || position.board[square - 7] == 'e') {
-                        moveCounterBlack++;
+                        hasRightNeighbor = true;
                     }
                 }
             }
             if (square % 8 != 0) {
                 if (position.board[square - 1] == 'p' || position.board[square - 1] == 'e') {
-                    moveCounterBlack++;
+                    hasLeftNeighbor = true;
                 }
                 if (square + 7 < 64) {
                     if (position.board[square + 7] == 'p' || position.board[square + 7] == 'e') {
-                        moveCounterBlack++;
+                        hasLeftNeighbor = true;
                     }
                 }
                 if (square - 9 >= 0) {
                     if (position.board[square - 9] == 'p' || position.board[square - 9] == 'e') {
-                        moveCounterBlack++;
+                        hasLeftNeighbor = true;
                     }
                 }
             }
+            moveCounterBlack += hasLeftNeighbor + hasRightNeighbor;
             break;
         }
 
         case 'e': // black double moved pawn
         {
             objectiveValue -= 1;
+            bool hasLeftNeighbor = false;
+            bool hasRightNeighbor = false;
             if (square % 8 != 7) {
                 if (position.board[square + 1] == 'p' || position.board[square + 1] == 'e') {
-                    moveCounterBlack++;
+                    hasRightNeighbor = true;
                 }
                 if (square + 9 < 64) {
                     if (position.board[square + 9] == 'p' || position.board[square + 9] == 'e') {
-                        moveCounterBlack++;
+                        hasRightNeighbor = true;
                     }
                 }
                 if (square - 7 >= 0) {
                     if (position.board[square - 7] == 'p' || position.board[square - 7] == 'e') {
-                        moveCounterBlack++;
+                        hasRightNeighbor = true;
                     }
                 }
             }
             if (square % 8 != 0) {
                 if (position.board[square - 1] == 'p' || position.board[square - 1] == 'e') {
-                    moveCounterBlack++;
+                    hasLeftNeighbor = true;
                 }
                 if (square + 7 < 64) {
                     if (position.board[square + 7] == 'p' || position.board[square + 7] == 'e') {
-                        moveCounterBlack++;
+                        hasLeftNeighbor = true;
                     }
                 }
                 if (square - 9 >= 0) {
                     if (position.board[square - 9] == 'p' || position.board[square - 9] == 'e') {
-                        moveCounterBlack++;
+                        hasLeftNeighbor = true;
                     }
                 }
             }
+            moveCounterBlack += hasLeftNeighbor + hasRightNeighbor;
             break;
         }
 
@@ -4853,6 +4868,10 @@ ___|___
     char boardBuffer[bufferSize];
     int counter = 0;
     char rowIDbuffer[8];
+
+    char whiteSquareChar = '.';
+    char blackSquareChar = ' ';
+
     for (short i = 7; i >= 0; i--){
         for (int j = 0; j < 8; j++) {
             rowIDbuffer[j] = position.board[i * 8 + j];
@@ -4869,12 +4888,12 @@ ___|___
                     {
                         if (wPawn[k + (l * squareSize)] == ' ') {
                             if (j % 2 == (i % 2)) {
-                                boardBuffer[counter] = '.';
+                                boardBuffer[counter] = blackSquareChar;
                                 counter++;
                             }
                             else
                             {
-                                boardBuffer[counter] = ' ';
+                                boardBuffer[counter] = whiteSquareChar;
                                 counter++;
                             }
                         }
@@ -4889,12 +4908,12 @@ ___|___
                     {
                         if (wPawn[k + (l * squareSize)] == ' ') {
                             if (j % 2 == (i % 2)) {
-                                boardBuffer[counter] = '.';
+                                boardBuffer[counter] = blackSquareChar;
                                 counter++;
                             }
                             else
                             {
-                                boardBuffer[counter] = ' ';
+                                boardBuffer[counter] = whiteSquareChar;
                                 counter++;
                             }
                         }
@@ -4910,12 +4929,12 @@ ___|___
                         char c = bPawn[k + (l * squareSize)];
                         if (c == ' ') {
                             if (j % 2 == (i % 2)) {
-                                boardBuffer[counter] = '.';
+                                boardBuffer[counter] = blackSquareChar;
                                 counter++;
                             }
                             else
                             {
-                                boardBuffer[counter] = ' ';
+                                boardBuffer[counter] = whiteSquareChar;
                                 counter++;
                             }
                         }
@@ -4939,12 +4958,12 @@ ___|___
                         char c = bPawn[k + (l * squareSize)];
                         if (c == ' ') {
                             if (j % 2 == (i % 2)) {
-                                boardBuffer[counter] = '.';
+                                boardBuffer[counter] = blackSquareChar;
                                 counter++;
                             }
                             else
                             {
-                                boardBuffer[counter] = ' ';
+                                boardBuffer[counter] = whiteSquareChar;
                                 counter++;
                             }
                         }
@@ -4969,12 +4988,12 @@ ___|___
                         char c = wKnight[k + (l * squareSize)];
                         if (c == ' ') {
                             if (j % 2 == (i % 2)) {
-                                boardBuffer[counter] = '.';
+                                boardBuffer[counter] = blackSquareChar;
                                 counter++;
                             }
                             else
                             {
-                                boardBuffer[counter] = ' ';
+                                boardBuffer[counter] = whiteSquareChar;
                                 counter++;
                             }
                         }
@@ -4990,12 +5009,12 @@ ___|___
                         char c = bKnight[k + (l * squareSize)];
                         if (c == ' ') {
                             if (j % 2 == (i % 2)) {
-                                boardBuffer[counter] = '.';
+                                boardBuffer[counter] = blackSquareChar;
                                 counter++;
                             }
                             else
                             {
-                                boardBuffer[counter] = ' ';
+                                boardBuffer[counter] = whiteSquareChar;
                                 counter++;
                             }
                         }
@@ -5020,12 +5039,12 @@ ___|___
                         char c = wBishop[k + (l * squareSize)];
                         if (c == ' ') {
                             if (j % 2 == (i % 2)) {
-                                boardBuffer[counter] = '.';
+                                boardBuffer[counter] = blackSquareChar;
                                 counter++;
                             }
                             else
                             {
-                                boardBuffer[counter] = ' ';
+                                boardBuffer[counter] = whiteSquareChar;
                                 counter++;
                             }
                         }
@@ -5041,12 +5060,12 @@ ___|___
                         char c = bBishop[k + (l * squareSize)];
                         if (c == ' ') {
                             if (j % 2 == (i % 2)) {
-                                boardBuffer[counter] = '.';
+                                boardBuffer[counter] = blackSquareChar;
                                 counter++;
                             }
                             else
                             {
-                                boardBuffer[counter] = ' ';
+                                boardBuffer[counter] = whiteSquareChar;
                                 counter++;
                             }
                         }
@@ -5071,12 +5090,12 @@ ___|___
                         char c = wRook[k + (l * squareSize)];
                         if (c == ' ') {
                             if (j % 2 == (i % 2)) {
-                                boardBuffer[counter] = '.';
+                                boardBuffer[counter] = blackSquareChar;
                                 counter++;
                             }
                             else
                             {
-                                boardBuffer[counter] = ' ';
+                                boardBuffer[counter] = whiteSquareChar;
                                 counter++;
                             }
                         }
@@ -5092,12 +5111,12 @@ ___|___
                         char c = wRook[k + (l * squareSize)];
                         if (c == ' ') {
                             if (j % 2 == (i % 2)) {
-                                boardBuffer[counter] = '.';
+                                boardBuffer[counter] = blackSquareChar;
                                 counter++;
                             }
                             else
                             {
-                                boardBuffer[counter] = ' ';
+                                boardBuffer[counter] = whiteSquareChar;
                                 counter++;
                             }
                         }
@@ -5113,12 +5132,12 @@ ___|___
                         char c = bRook[k + (l * squareSize)];
                         if (c == ' ') {
                             if (j % 2 == (i % 2)) {
-                                boardBuffer[counter] = '.';
+                                boardBuffer[counter] = blackSquareChar;
                                 counter++;
                             }
                             else
                             {
-                                boardBuffer[counter] = ' ';
+                                boardBuffer[counter] = whiteSquareChar;
                                 counter++;
                             }
                         }
@@ -5142,12 +5161,12 @@ ___|___
                         char c = bRook[k + (l * squareSize)];
                         if (c == ' ') {
                             if (j % 2 == (i % 2)) {
-                                boardBuffer[counter] = '.';
+                                boardBuffer[counter] = blackSquareChar;
                                 counter++;
                             }
                             else
                             {
-                                boardBuffer[counter] = ' ';
+                                boardBuffer[counter] = whiteSquareChar;
                                 counter++;
                             }
                         }
@@ -5172,12 +5191,12 @@ ___|___
                         char c = wQueen[k + (l * squareSize)];
                         if (c == ' ') {
                             if (j % 2 == (i % 2)) {
-                                boardBuffer[counter] = '.';
+                                boardBuffer[counter] = blackSquareChar;
                                 counter++;
                             }
                             else
                             {
-                                boardBuffer[counter] = ' ';
+                                boardBuffer[counter] = whiteSquareChar;
                                 counter++;
                             }
                         }
@@ -5193,12 +5212,12 @@ ___|___
                         char c = bQueen[k + (l * squareSize)];
                         if (c == ' ') {
                             if (j % 2 == (i % 2)) {
-                                boardBuffer[counter] = '.';
+                                boardBuffer[counter] = blackSquareChar;
                                 counter++;
                             }
                             else
                             {
-                                boardBuffer[counter] = ' ';
+                                boardBuffer[counter] = whiteSquareChar;
                                 counter++;
                             }
                         }
@@ -5223,12 +5242,12 @@ ___|___
                         char c = wKing[k + (l * squareSize)];
                         if (c == ' ') {
                             if (j % 2 == (i % 2)) {
-                                boardBuffer[counter] = '.';
+                                boardBuffer[counter] = blackSquareChar;
                                 counter++;
                             }
                             else
                             {
-                                boardBuffer[counter] = ' ';
+                                boardBuffer[counter] = whiteSquareChar;
                                 counter++;
                             }
                         }
@@ -5244,12 +5263,12 @@ ___|___
                         char c = wKing[k + (l * squareSize)];
                         if (c == ' ') {
                             if (j % 2 == (i % 2)) {
-                                boardBuffer[counter] = '.';
+                                boardBuffer[counter] = blackSquareChar;
                                 counter++;
                             }
                             else
                             {
-                                boardBuffer[counter] = ' ';
+                                boardBuffer[counter] = whiteSquareChar;
                                 counter++;
                             }
                         }
@@ -5265,12 +5284,12 @@ ___|___
                         char c = bKing[k + (l * squareSize)];
                         if (c == ' ') {
                             if (j % 2 == (i % 2)) {
-                                boardBuffer[counter] = '.';
+                                boardBuffer[counter] = blackSquareChar;
                                 counter++;
                             }
                             else
                             {
-                                boardBuffer[counter] = ' ';
+                                boardBuffer[counter] = whiteSquareChar;
                                 counter++;
                             }
                         }
@@ -5294,12 +5313,12 @@ ___|___
                         char c = bKing[k + (l * squareSize)];
                         if (c == ' ') {
                             if (j % 2 == (i % 2)) {
-                                boardBuffer[counter] = '.';
+                                boardBuffer[counter] = blackSquareChar;
                                 counter++;
                             }
                             else
                             {
-                                boardBuffer[counter] = ' ';
+                                boardBuffer[counter] = whiteSquareChar;
                                 counter++;
                             }
                         }
@@ -5322,12 +5341,12 @@ ___|___
                     default:
                         
                         if (j % 2 == (i % 2)) {
-                            boardBuffer[counter] = '.';
+                            boardBuffer[counter] = blackSquareChar;
                             counter++;
                         }
                         else
                         {
-                            boardBuffer[counter] = ' ';
+                            boardBuffer[counter] = whiteSquareChar;
                             counter++;
                         }
 
@@ -5347,14 +5366,136 @@ ___|___
     }
 
 }
+int notationToInt(std::string square, int indexMod) {
+
+    if ((int)square.length() >= indexMod - 1) {
+        std::string str = "";
+        if (square[0 + indexMod] >= 97 && square[0 + indexMod] <= 104) {
+            if (square[(1 + indexMod)] >= 49 && square[(1 + indexMod)] <= 56) {
+                int x = square[(0 + indexMod)] - 97; // 0 - 7
+                int y = square[(1 + indexMod)] - 49; // 0 - 7
+                return (y * 8) + x;
+            }
+            else
+            {
+                //std::cout << "y out of bounds of the board\n";
+                return -1; // error
+            }
+        }
+        else
+        {
+            //std::cout << "x out of bounds of the board\n";
+            return -1; // error
+        }
+    }
+    else
+    {
+        //std::cout << "string too small " << square.length() << ", " << indexMod - 1 << '\n';
+        return -1; // error
+    }
+}
+bool checkIfMoveIsLegal(Position position, int from, int to) {
+
+
+
+}
+
+void moveForPlayer(Position &position, bool white, int from, int to) {
+
+    for (short i = 0; i < 64; i++) {
+        if (white) {
+            if (position.board[i] == 'e') { // resetting en passant pawns from last move
+                position.board[i] = 'p';
+            }
+        }
+        else
+        {
+            if (position.board[i] == 'E') {
+                position.board[i] = 'P';
+            }
+        }
+    }
+
+
+    // applying the best move to the origin board after miniMax is complete, applying possible piece changes from special moves
+    if (position.board[from] == 'P') {
+        if (to > 55) {
+            position.board[from] = 'Q'; // promoting to queen
+        }
+        short mDif = to - from; // for en passant
+        if (mDif != 8) {
+            if (mDif == 16) {
+                position.board[from] = 'E'; // changing to an en passant pawn
+            }
+            else
+            {
+                if (position.board[to] == '0') { // meaning we captured en passant
+                    position.board[to - 8] = '0';
+                }
+            }
+        }
+    }
+    if (position.board[from] == 'p') {
+        if (to < 8) {
+            position.board[from] = 'q'; // promoting to queen
+        }
+        short mDif = from - to; // for en passant
+        if (mDif != 8) {
+            if (mDif == 16) {
+                position.board[from] = 'e'; // changing to an en passant pawn
+            }
+            else
+            {
+                if (position.board[to] == '0') { // meaning we captured en passant
+                    position.board[to + 8] = '0';
+                }
+            }
+        }
+    }
+
+    if (position.board[from] == 'K') {
+        if (from + 2 == to) { // castling king side
+            position.board[7] = '0';
+            position.board[5] = 'H'; // moving the rook
+        }
+        if (from - 2 == to) { // castling queen side
+            position.board[0] = '0';
+            position.board[3] = 'H';
+        }
+        position.board[from] = 'C';
+    }
+    if (position.board[from] == 'R') {
+        position.board[from] = 'H'; // changing rook to a moved rook
+    }
+    if (position.board[from] == 'k') {
+        if (from + 2 == to) {
+            position.board[63] = '0';
+            position.board[61] = 'h';
+        }
+        if (from - 2 == to) {
+            position.board[56] = '0';
+            position.board[59] = 'h';
+        }
+        position.board[from] = 'c';
+    }
+    if (position.board[from] == 'r') {
+        position.board[from] = 'h';
+    }
+
+    position.board[to] = position.board[from]; // applying the move
+    position.board[from] = '0';
+}
+
+
+
 
 int main()
 {
-    const short depth = 3;
+    const short depth = 4;
     Position positions[depth + 1]; // buffer for position data, the first element is the current position
 
     arrangeStartingBoard(positions[0]);
-    //loadPosition(positions[0], "debug16.txt"); // changes alpha to 0 for some reason
+    //loadPosition(positions[0], "debug17.txt"); // changes alpha to 0 for some reason
     //debuggingPosition1(positions[0]);
 
     Position lastPosition = Position();
@@ -5363,8 +5504,13 @@ int main()
     //printBoard(positions[0]);
     std::string input;
 
-    printFancyBoard(positions[0]);
+    //initialize objects for cursor manipulation
+    HANDLE hStdout;
+    COORD destCoord;
+    hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
 
+    printFancyBoard(positions[0]);
+    bool computerIsWhite = false;
     while (true)
     {
         std::cin >> input;
@@ -5376,52 +5522,69 @@ int main()
             std::cin >> input;
             loadPosition(positions[0], input);
         }
+
+        if (input == "back") {
+            copyPosition(positions[0], lastPosition);
+
+            destCoord.X = 0;
+            destCoord.Y = 0;
+            SetConsoleCursorPosition(hStdout, destCoord);
+
+
+            printFancyBoard(positions[0]);
+            std::cout << "           " << '\n';
+            std::cout << "Heuristic value: " << heuristicValue(positions[0]) << '\n';
+            std::cout << '\n';
+            destCoord.X = 0;
+            destCoord.Y = 8 * 6 + 4;
+            std::cout << "         ";
+            destCoord.X = 0;
+            SetConsoleCursorPosition(hStdout, destCoord);
+            std::cin >> input;
+        }
+
         copyPosition(lastPosition, positions[0]);
 
-        static bool whiteToMove = true;
+        if (notationToInt(input, 0) != -1 && notationToInt(input, 3) != -1) {
+
+            moveForPlayer(positions[0], !computerIsWhite, notationToInt(input, 0), notationToInt(input, 3));
+        }
 
         if (input[0] == 'W') {
-            whiteToMove = true;
+            computerIsWhite = true;
         }
-        if (input[0] == 'B') {
-            whiteToMove = false;
+        else if (input[0] == 'B') {
+            computerIsWhite = false;
         }
 
         auto start = high_resolution_clock::now();
 
-        findBestMove(positions, depth, whiteToMove);
+        findBestMove(positions, depth, computerIsWhite);
 
         auto stop = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>(stop - start);
 
-        whiteToMove = !whiteToMove;
-
         std::cout << '\n';
         std::cout << '\n';
-
-        /*
-        //initialize objects for cursor manipulation
-        HANDLE hStdout;
-        COORD destCoord;
-        hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
 
         //position cursor at start of window
         destCoord.X = 0;
         destCoord.Y = 0;
         SetConsoleCursorPosition(hStdout, destCoord);
-        */
+        
+
         printFancyBoard(positions[0]);
+        std::cout << "           " << '\n';
         //printBoard(positions[0]);
         std::cout << "Heuristic value: " << heuristicValue(positions[0]) << '\n';
         std::cout << duration.count() / 1000.0 << " milliseconds" << '\n';
 
-        
-
-        /*
         destCoord.X = 0;
-        destCoord.Y = 9;
+        destCoord.Y = 8 * 6 + 4;
+        std::cout << "         ";
+        destCoord.X = 0;
         SetConsoleCursorPosition(hStdout, destCoord);
-        */
+        
     }
 
 }
@@ -5434,8 +5597,6 @@ int main()
 
 // check and checkmate - partly implemented, needs testing
 // castling - implemented, needs testing
-
-// make user interface with ASCII art
 
 
 
