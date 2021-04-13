@@ -3833,7 +3833,7 @@ float miniMax(Position positions[], short depth, bool white, short &bestMoveFrom
                         }
                     }
                     move = square + 6;
-                    if (move < 64 && move % 8 != 7) {
+                    if (move < 64 && move % 8 != 7 && square % 8 > 1) {
                         if (positions[positionIndex].board[move] < 96) {
                             if (createNewPositionAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white)) {
                                 goto PRUNED;
@@ -3849,7 +3849,7 @@ float miniMax(Position positions[], short depth, bool white, short &bestMoveFrom
                         }
                     }
                     move = square - 6;
-                    if (move >= 0 && move % 8 != 0) {
+                    if (move >= 0 && move % 8 != 0 && square % 8 < 6) {
                         if (positions[positionIndex].board[move] < 96) {
                             if (createNewPositionAndCallMiniMax(positions, positionIndex, i, move, depth, staticDepth, bestMoveFrom, bestMoveTo, white)) {
                                 goto PRUNED;
@@ -4724,7 +4724,7 @@ void debuggingPosition1(Position& position) {
 
 }
 
-void printFancyBoard(Position position) {
+void printFancyBoard(Position position, bool whitePerspective) {
     
     /*
 
@@ -4873,8 +4873,10 @@ ___|___
     char blackSquareChar = ' ';
 
     for (short i = 7; i >= 0; i--){
+        int newI = ((7 - i) * (1 - whitePerspective)) + (i * whitePerspective);
         for (int j = 0; j < 8; j++) {
-            rowIDbuffer[j] = position.board[i * 8 + j];
+            int newJ = ((7 - j) * (1 - whitePerspective)) + (j * whitePerspective);
+            rowIDbuffer[j] = position.board[newI * 8 + newJ];
         }
 
         for (int l = 0; l < 6; l++) { // for each row row
@@ -5368,12 +5370,22 @@ ___|___
 }
 int notationToInt(std::string square, int indexMod) {
 
-    if ((int)square.length() >= indexMod - 1) {
+    int sLength = square.length();
+
+    if (sLength >= indexMod - 1) {
+
         std::string str = "";
-        if (square[0 + indexMod] >= 97 && square[0 + indexMod] <= 104) {
-            if (square[(1 + indexMod)] >= 49 && square[(1 + indexMod)] <= 56) {
-                int x = square[(0 + indexMod)] - 97; // 0 - 7
-                int y = square[(1 + indexMod)] - 49; // 0 - 7
+        if (square[indexMod] >= 97 && square[indexMod] <= 104) { // the first char
+
+            if (square[1 + indexMod] >= 49 && square[1 + indexMod] <= 56) { // the second char
+
+                int x = square[indexMod] - 97; // 0 - 7
+                int y = square[1 + indexMod] - 49; // 0 - 7
+
+                //debugging
+                //std::cout << "indexMod + 1: " << (1 + (int)indexMod) << ", square: " << square << '\n';
+                //std::wcout << "x and y: " << x << ", " << y << '\n';
+
                 return (y * 8) + x;
             }
             else
@@ -5486,13 +5498,48 @@ void moveForPlayer(Position &position, bool white, int from, int to) {
     position.board[from] = '0';
 }
 
+void DisplayHelpMenu() {
 
+    
+
+
+
+}
 
 
 int main()
 {
-    const short depth = 4;
-    Position positions[depth + 1]; // buffer for position data, the first element is the current position
+    std::string input;
+
+    bool playerIsWhite = true;
+    int difficultyLevel = 4;
+    std::cout << "Welcome! Enter ? at anytime to see the help menu";
+    std::cout << '\n';
+    std::cout << "Choose a color, enter W or B: ";
+    std::cin >> input;
+    if (input[0] != 'W' && input[0] != 'w') {
+        playerIsWhite = false;
+        std::cout << " You chose black\n";
+    }
+    else
+    {
+        std::cout << " You chose white\n";
+    }
+
+    std::cout << "Select difficulty level, 1-5: ";
+    std::cin >> input;
+    difficultyLevel = input[0] - 48;
+    if (difficultyLevel > 5) {
+        difficultyLevel = 5;
+    }
+    if (difficultyLevel < 1) {
+        difficultyLevel = 1;
+    }
+    std::cout << " You chose level " << difficultyLevel << '\n';
+
+
+    const short depth = difficultyLevel;
+    Position positions[6]; // buffer for position data, the first element is the current position, just making 6 being the maximum depth the player can choose
 
     arrangeStartingBoard(positions[0]);
     //loadPosition(positions[0], "debug17.txt"); // changes alpha to 0 for some reason
@@ -5501,37 +5548,38 @@ int main()
     Position lastPosition = Position();
     copyPosition(lastPosition, positions[0]);
 
-    //printBoard(positions[0]);
-    std::string input;
-
     //initialize objects for cursor manipulation
     HANDLE hStdout;
     COORD destCoord;
     hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
 
-    printFancyBoard(positions[0]);
-    bool computerIsWhite = false;
+    if (!playerIsWhite) {
+        findBestMove(positions, depth, true);
+    }
+
+    printFancyBoard(positions[0], playerIsWhite);
     while (true)
     {
+    TRYAGAIN:;
         std::cin >> input;
         if (input[0] == 'S') {
+            std::cout << "enter file name: \n";
             std::cin >> input;
             savePosition(lastPosition, input);
         }
-        if (input[0] == 'L') {
+        else if (input[0] == 'L') {
+            std::cout << "enter file name: \n";
             std::cin >> input;
             loadPosition(positions[0], input);
         }
-
-        if (input == "back") {
+        else if (input == "back") {
             copyPosition(positions[0], lastPosition);
 
             destCoord.X = 0;
             destCoord.Y = 0;
             SetConsoleCursorPosition(hStdout, destCoord);
 
-
-            printFancyBoard(positions[0]);
+            printFancyBoard(positions[0], playerIsWhite);
             std::cout << "           " << '\n';
             std::cout << "Heuristic value: " << heuristicValue(positions[0]) << '\n';
             std::cout << '\n';
@@ -5542,24 +5590,21 @@ int main()
             SetConsoleCursorPosition(hStdout, destCoord);
             std::cin >> input;
         }
+        else if (notationToInt(input, 0) != -1 && notationToInt(input, 3) != -1) {
+            moveForPlayer(positions[0], playerIsWhite, notationToInt(input, 0), notationToInt(input, 3));
+        }
+        else
+        {
+            std::cout << "invalid input try again\n";
+            goto TRYAGAIN;
+        }
 
         copyPosition(lastPosition, positions[0]);
 
-        if (notationToInt(input, 0) != -1 && notationToInt(input, 3) != -1) {
-
-            moveForPlayer(positions[0], !computerIsWhite, notationToInt(input, 0), notationToInt(input, 3));
-        }
-
-        if (input[0] == 'W') {
-            computerIsWhite = true;
-        }
-        else if (input[0] == 'B') {
-            computerIsWhite = false;
-        }
 
         auto start = high_resolution_clock::now();
 
-        findBestMove(positions, depth, computerIsWhite);
+        findBestMove(positions, depth, !playerIsWhite);
 
         auto stop = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>(stop - start);
@@ -5568,23 +5613,25 @@ int main()
         std::cout << '\n';
 
         //position cursor at start of window
+        /*
         destCoord.X = 0;
         destCoord.Y = 0;
         SetConsoleCursorPosition(hStdout, destCoord);
-        
+        */
 
-        printFancyBoard(positions[0]);
+        printFancyBoard(positions[0], playerIsWhite);
         std::cout << "           " << '\n';
         //printBoard(positions[0]);
         std::cout << "Heuristic value: " << heuristicValue(positions[0]) << '\n';
         std::cout << duration.count() / 1000.0 << " milliseconds" << '\n';
 
+        /*
         destCoord.X = 0;
         destCoord.Y = 8 * 6 + 4;
         std::cout << "         ";
         destCoord.X = 0;
         SetConsoleCursorPosition(hStdout, destCoord);
-        
+        */
     }
 
 }
